@@ -1,5 +1,5 @@
-#include "strumok.cpp"
 #include <cstdlib>
+#include "strumok.cpp"
 
 int main()
 {
