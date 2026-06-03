@@ -1,3 +1,6 @@
+#include <cstdint>
+using namespace std;
+
 class dstu8845 {
     private:
         uint64_t  S[16];
