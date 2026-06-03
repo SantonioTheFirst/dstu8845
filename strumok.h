@@ -694,6 +694,11 @@ class dstu8845 {
 
 public:
     dstu8845(uint64_t *key, uint8_t key_size, uint64_t *iv, bool verbose, bool big_endian);
+    dstu8845_512_verbose(uint64_t *key, uint64_t *iv);
+    dstu8845_256_verbose(uint64_t *key, uint64_t *iv);
+    dstu8845_512(uint64_t *key, uint64_t *iv);
+    dstu8845_256(uint64_t *key, uint64_t *iv);
+
     void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
     uint64_t inline next_stream();
     // void inline next_stream_full_crypt(uint64_t *in, uint64_t *out_stream);
