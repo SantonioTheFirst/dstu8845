@@ -3,6 +3,8 @@
 
 int main()
 {
+  using namespace std;
+  
   uint64_t key[8];
   uint64_t iv[4];
   uint8_t key_size = 64;
