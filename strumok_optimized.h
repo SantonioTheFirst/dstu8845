@@ -1,5 +1,7 @@
 #include <cstdint>
 #include <cstring>
+#include <inttypes.h>
+#include <cstdio>
 using namespace std;
 
 class dstu8845 {
@@ -753,6 +755,16 @@ public:
 
     void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
     uint64_t inline next_stream();
+
+    void print()
+    {
+        for(size_t i = 0; i < 16; i++)
+        {
+            printf("S_%zu 0x%016" PRIx64 "\n", i, this->S[i]);
+        }
+        printf("r_0 0x%016" PRIx64 "\n", this->r[0]);
+        printf("r_0 0x%016" PRIx64 "\n", this->r[1]);
+    }
     // void inline next_stream_full_crypt(uint64_t *in, uint64_t *out_stream);
     // void inline next_stream_test();
 
