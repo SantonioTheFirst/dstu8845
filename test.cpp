@@ -37,8 +37,8 @@ int main()
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    cout << "Encrypted 15GB in " << time_spent << " seconds\n";
-    cout << "Speed is " << ((1 / ((time_spent * 1.0) / 15)) * 8) << " Gb/s\n";
+    cout << "Encrypted 120GB in " << time_spent << " seconds\n";
+    cout << "Speed is " << ((1 / ((time_spent * 1.0) / (15 * 8))) * 8) << " Gb/s\n";
 
     return 0;
 }
