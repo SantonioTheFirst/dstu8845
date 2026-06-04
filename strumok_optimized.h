@@ -14,17 +14,17 @@ class dstu8845 {
 
         dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv);
 
-        uint8_t inline byte(uint8_t n, uint64_t w){
+        uint8_t byte(uint8_t n, uint64_t w){
           return (((w)>>(n*8)) & 0xff);
         }
 
-        uint64_t inline ainv_mul(uint64_t w){
+        uint64_t ainv_mul(uint64_t w){
           return (((w)>>8)^(this->strumok_alphainv_mul[w&0xff]));
         }
-        uint64_t inline a_mul(uint64_t w){
+        uint64_t a_mul(uint64_t w){
           return (((w)<<8)^(this->strumok_alpha_mul[w>>56]));
         }
-        uint64_t inline T(uint64_t w){
+        uint64_t T(uint64_t w){
           return ((this->T0[this->byte(0,(w))])^(this->T1[this->byte(1,(w))])^(this->T2[this->byte(2,(w))])^(this->T3[this->byte(3,(w))])^(this->T4[this->byte(4,(w))])^(this->T5[this->byte(5,(w))])^(this->T6[this->byte(6,(w))])^(this->T7[this->byte(7,(w))]));
         }
         alignas(64) const uint64_t strumok_alpha_mul[256] = {
@@ -702,37 +702,12 @@ public:
     //dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv);
     //dstu8845_256_verbose(const uint64_t *key, const uint64_t *iv);
 
-    static dstu8845 dstu8845_512(const uint64_t *key, const uint64_t *iv)
-    {
-        uint64_t S[16];
-        uint64_t r[2];
-
-        S[0] = key[7] ^ iv[0];
-        S[1] = key[6];
-        S[2] = key[5];
-        S[3] = key[4] ^ iv[1];
-        S[4] = key[3];
-        S[5] = key[2] ^ iv[2];
-        S[6] = key[1];
-        S[7] = ~key[0];
-        S[8] = key[4] ^ iv[3];
-        S[9] = ~key[6];
-        S[10] = key[5];
-        S[11] = ~key[7];
-        S[12] = key[3];
-        S[13] = key[2];
-        S[14] = ~key[1];
-        S[15] = key[0];
-        r[0] = 0;
-        r[1] = 0;
-
-        return dstu8845(S, r, key, iv);
-    }
+    static dstu8845 dstu8845_512(const uint64_t *key, const uint64_t *iv);
     
     static dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
 
     void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
-    uint64_t inline next_stream();
+    uint64_t next_stream();
 
     void print()
     {
