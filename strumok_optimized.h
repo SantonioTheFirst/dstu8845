@@ -706,7 +706,7 @@ public:
     
     static dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
 
-    void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
+    void dstu8845_crypt(const uint64_t *in, uint64_t *out);
     uint64_t next_stream();
 
     void print();
