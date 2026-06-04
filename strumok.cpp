@@ -119,10 +119,9 @@ dstu8845::dstu8845(uint64_t *key, uint8_t key_size, uint64_t *iv, bool verbose =
   }
 }
 
-dstu8845::dstu8845_512_verbose(uint64_t *key, uint64_t *iv)
+dstu8845::dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv)
 {
   this->z_0 = 0;
-  this->key_size = key_size;
   memcpy(this->iv, iv, 32);
   memcpy(this->key, key, 64);
   this->S[0] = this->key[7] ^ this->iv[0];
@@ -198,10 +197,9 @@ dstu8845::dstu8845_512_verbose(uint64_t *key, uint64_t *iv)
   }
 }
 
-dstu8845::dstu8845_512(uint64_t *key, uint64_t *iv)
+dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
 {
   this->z_0 = 0;
-  this->key_size = key_size;
   memcpy(this->iv, iv, 32);
   memcpy(this->key, key, 64);
   this->S[0] = this->key[7] ^ this->iv[0];
