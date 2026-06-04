@@ -1,5 +1,6 @@
 #include "strumok_optimized.h"
 #include <iostream>
+#include <time.h>
 
 int main()
 {
@@ -25,23 +26,17 @@ int main()
 
     const uint64_t in[4096] = {0};
     uint64_t out[4096] = {0};
-  
+    
+    clock_t begin = clock();
     for(uint64_t i = 0; i < 1024 * 15 * 256; i++)
       cipher.dstu8845_crypt(in, out);
-    cout << out[0] << endl;
-    clock_t begin = clock();
-
-    for (int i = 0; i < 1024 * 15 * 256; i++) {
-        dstu8845_crypt(ctx, out, 4096, out);
-    }
-
     clock_t end = clock();
-
-
+    cout << out[0] << endl;
+    
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    printf("Encrypted 15GB in %f seconds\n", time_spent);
-    printf("Speed is %f Gb/s\n", ((1 / ((time_spent * 1.0) / 15)) * 8));
+    cout << "Encrypted 15GB in " << time_spent << " seconds\n";
+    cout << "Speed is " << ((1 / ((time_spent * 1.0) / 15)) * 8) << " Gb/s\n";
 
     return 0;
 }
