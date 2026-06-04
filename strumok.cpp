@@ -28,6 +28,33 @@ dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, co
         this->z_0 |= ((((this->S[0] ^ this->r[1] ^ (this->r[0] + this->S[15]))) & 1) << i);
     }
 }
+
+dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
+{
+        uint64_t S[16];
+        uint64_t r[2];
+
+        S[0] = key[7] ^ iv[0];
+        S[1] = key[6];
+        S[2] = key[5];
+        S[3] = key[4] ^ iv[1];
+        S[4] = key[3];
+        S[5] = key[2] ^ iv[2];
+        S[6] = key[1];
+        S[7] = ~key[0];
+        S[8] = key[4] ^ iv[3];
+        S[9] = ~key[6];
+        S[10] = key[5];
+        S[11] = ~key[7];
+        S[12] = key[3];
+        S[13] = key[2];
+        S[14] = ~key[1];
+        S[15] = key[0];
+        r[0] = 0;
+        r[1] = 0;
+
+        return dstu8845(S, r, key, iv);
+}
       
 
 dstu8845::dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv)
