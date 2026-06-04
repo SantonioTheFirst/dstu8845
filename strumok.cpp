@@ -5,12 +5,11 @@
 using namespace std;
 
 
-dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv)
+dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv)
 {   
-    cout << sizeof(key) / sizeof(key[0]) << endl;
     memcpy(this->S, S, 128);
     memcpy(this->r, r, 16);
-    memcpy(this->key, key, sizeof(key) / sizeof(key[0]));
+    memcpy(this->key, key, key_size);
     memcpy(this->iv, iv, 32);
             
     static uint64_t outfrom_fsm, fsmtmp, tmp;
@@ -53,7 +52,7 @@ dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
         S[15] = key[0];
         r[0] = 0;
         r[1] = 0;
-        return dstu8845(S, r, key, iv);
+        return dstu8845(S, r, key, 64, iv);
 }
 
 void dstu8845::print()
@@ -85,11 +84,9 @@ uint64_t dstu8845::next_stream()
   return out_stream;
 }
 
-void dstu8845::dstu8845_crypt(const uint64_t *in, uint64_t *out)
+void dstu8845::dstu8845_crypt(const uint64_t *in, uint64_t *out, uint64_t inl)
 {
-    uint64_t size = sizeof(in) / sizeof(in[0]);
-    //cout << "Size " << size << endl;
-    for(uint64_t i = 0; i < size; i++)
+    for(uint64_t i = 0; i < inl; i++)
     {
         out[i] = in[i] ^ this->next_stream();
     }
