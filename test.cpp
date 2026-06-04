@@ -30,7 +30,9 @@ int main()
     clock_t begin = clock();
     for(uint64_t i = 0; i < 1024 * 15 * 256; i++)
     {
-        cipher.dstu8845_crypt(out, out); 
+        cipher.dstu8845_crypt(out, out);
+        if(i % (1024 * 256) == 0)
+            cout << i << endl;
     }
     clock_t end = clock();
     cout << out[0] << endl;
