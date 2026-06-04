@@ -7,7 +7,9 @@ class dstu8845 {
         alignas(64) uint64_t  r[2];
         alignas(64) uint64_t  key[8];
         alignas(64) uint64_t  iv[4];
-        uint8_t   key_size; // Key size in bytes
+        //uint8_t   key_size; // Key size in bytes
+
+        dstu8845(const uint64_t * S, const uint64_t * key, const uint64_t * iv);
 
         uint8_t inline byte(uint8_t n, uint64_t w){
           return (((w)>>(n*8)) & 0xff);
@@ -693,11 +695,13 @@ class dstu8845 {
         };
 
 public:
-    dstu8845(uint64_t *key, uint8_t key_size, uint64_t *iv, bool verbose, bool big_endian);
-    dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv);
-    dstu8845_256_verbose(const uint64_t *key, const uint64_t *iv);
-    dstu8845_512(const uint64_t *key, const uint64_t *iv);
-    dstu8845_256(const uint64_t *key, const uint64_t *iv);
+    //dstu8845(uint64_t *key, uint8_t key_size, uint64_t *iv, bool verbose, bool big_endian);
+    //dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv);
+    //dstu8845_256_verbose(const uint64_t *key, const uint64_t *iv);
+
+    static dstu8845 dstu8845_512(const uint64_t *key, const uint64_t *iv);
+    
+    static dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
 
     void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
     uint64_t inline next_stream();
@@ -705,5 +709,4 @@ public:
     // void inline next_stream_test();
 
     uint32_t z_0;
-    bool inline get_first_keystream_bit();
 };
