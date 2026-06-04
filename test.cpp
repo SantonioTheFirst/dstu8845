@@ -1,5 +1,4 @@
-#include <cstdlib>
-#include "strumok.cpp"
+#include "strumok_optimized.h"
 
 int main()
 {
@@ -7,7 +6,6 @@ int main()
   
   uint64_t key[8];
   uint64_t iv[4];
-  uint8_t key_size = 64;
   iv[0] = 1;
   iv[1] = 2;
   iv[2] = 3;
@@ -22,6 +20,7 @@ int main()
   key[1] = 0x0000000000000000;
   key[0] = 0x0000000000000000;
 
-  dstu8845 cipher(key, key_size, iv, true, false);
+  dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
+  cipher.print();
   return 0;
 }
