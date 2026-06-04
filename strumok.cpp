@@ -6,7 +6,8 @@ using namespace std;
 
 
 dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv)
-{
+{   
+    cout << sizeof(key) / sizeof(key[0]) << endl;
     memcpy(this->S, S, 128);
     memcpy(this->r, r, 16);
     memcpy(this->key, key, sizeof(key) / sizeof(key[0]));
@@ -87,7 +88,7 @@ uint64_t dstu8845::next_stream()
 void dstu8845::dstu8845_crypt(const uint64_t *in, uint64_t *out)
 {
     uint64_t size = sizeof(in) / sizeof(in[0]);
-    cout << "Size " << size << endl;
+    //cout << "Size " << size << endl;
     for(uint64_t i = 0; i < size; i++)
     {
         out[i] = in[i] ^ this->next_stream();
