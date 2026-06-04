@@ -83,3 +83,12 @@ uint64_t dstu8845::next_stream()
 
   return out_stream;
 }
+
+void dstu8845::dstu8845_crypt(const uint64_t *in, const uint64_t *out)
+{
+    uint64_t size = sizeof(in) / sizeof(in[0]);
+    for(uint64_t i = 0; i < size; i++)
+    {
+        out[i] = in[i] ^ this->next_stream();
+    }
+}
