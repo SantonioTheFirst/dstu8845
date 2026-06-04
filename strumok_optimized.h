@@ -12,29 +12,7 @@ class dstu8845 {
         alignas(64) uint64_t  iv[4];
         //uint8_t   key_size; // Key size in bytes
 
-        dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv)
-        {
-            memcpy(this->S, S, 128);
-            memcpy(this->r, r, 16);
-            memcpy(this->key, key, sizeof(key) / sizeof(uint64_t));
-            memcpy(this->iv, iv, 32);
-            
-            static uint64_t outfrom_fsm, fsmtmp, tmp;
-            for(uint8_t i = 0; i < 32; ++i)
-            {
-                outfrom_fsm = (this->r[0] + this->S[15]) ^ this->r[1];
-                tmp = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]) ^ outfrom_fsm;
-                fsmtmp = this->r[1] + this->S[13];
-                this->r[1] = this->T(this->r[0]);
-                this->r[0] = fsmtmp;
-                for(uint8_t j = 0; j < 15; ++j)
-                {
-                    this->S[j] = this->S[j + 1];
-                }
-                this->S[15] = tmp;
-                this->z_0 |= ((((this->S[0] ^ this->r[1] ^ (this->r[0] + this->S[15]))) & 1) << i);
-           }
-        }
+        dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv);
 
         uint8_t inline byte(uint8_t n, uint64_t w){
           return (((w)>>(n*8)) & 0xff);
