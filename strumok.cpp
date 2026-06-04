@@ -1,5 +1,7 @@
-#include "strumok.h"
+#include "strumok_optimized.h"
+#include <inttypes.h>
 #include <cstring>
+#include <cstdio>
 #include <sstream>
 #include <iostream>
 using namespace std;
@@ -54,6 +56,16 @@ dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
         r[1] = 0;
 
         return dstu8845(S, r, key, iv);
+}
+
+void dstu8845::print()
+{
+    for(size_t i = 0; i < 16; i++)
+    {
+        printf("S_%zu 0x%016" PRIx64 "\n", i, this->S[i]);
+    }
+    printf("r_0 0x%016" PRIx64 "\n", this->r[0]);
+    printf("r_0 0x%016" PRIx64 "\n", this->r[1]);
 }
       
 
