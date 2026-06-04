@@ -12,7 +12,7 @@ class dstu8845 {
         alignas(64) uint64_t  iv[4];
         //uint8_t   key_size; // Key size in bytes
 
-        dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t *iv);
+        dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint64_t key_size, const uint64_t *iv);
 
         uint8_t byte(uint8_t n, uint64_t w){
           return (((w)>>(n*8)) & 0xff);
@@ -706,7 +706,7 @@ public:
     
     static dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
 
-    void dstu8845_crypt(const uint64_t *in, uint64_t *out);
+    void dstu8845_crypt(const uint64_t *in, uint64_t *out, const uint64_t inl);
     uint64_t next_stream();
 
     void print();
