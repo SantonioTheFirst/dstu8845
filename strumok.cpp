@@ -303,7 +303,7 @@ void dstu8845::next_stream(uint64_t *out_stream)
     out_stream[15] = (this->r[0] + this->S[15]) ^ this->r[1] ^ this->S[0];
 }
 
-void dstu8845::next_stream_full_crypt(uint64_t *in, uint64_t *out)
+void dstu8845::next_stream_full_crypt(uint64_t * __restrict in, uint64_t * __restrict out)
 {
     uint64_t fsmtmp;
 
@@ -405,7 +405,7 @@ void dstu8845::next_stream_full_crypt(uint64_t *in, uint64_t *out)
 }
 
 
-void dstu8845::dstu8845_crypt(const uint8_t *in, uint8_t *out, uint64_t inl)
+void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restrict out, uint64_t inl)
 {
     uint8_t i;
     uint64_t keystream[16];
