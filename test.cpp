@@ -24,21 +24,21 @@ int main()
     dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
     cipher.print();
 
-    const uint64_t in[4096] = {0};
-    uint64_t out[4096] = {0};
+    const uint8_t in[4096] = {0};
+    uint8_t out[4096] = {0};
     
     clock_t begin = clock();
     for(uint64_t i = 0; i < 1024 * 15 * 256; i++)
     {
-        cipher.dstu8845_crypt(out, out, 4096);
+        cipher.dstu8845_crypt(in, out, 4096);
     }
     clock_t end = clock();
     cout << out[0] << endl;
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    cout << "Encrypted 120GB in " << time_spent << " seconds\n";
-    cout << "Speed is " << ((1 / ((time_spent * 1.0) / (15 * 8))) * 8) << " Gb/s\n";
+    cout << "Encrypted 15 GB in " << time_spent << " seconds\n";
+    cout << "Speed is " << ((1 / ((time_spent * 1.0) / 15)) * 8) << " Gb/s\n";
 
     return 0;
 }
