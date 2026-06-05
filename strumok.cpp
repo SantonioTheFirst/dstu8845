@@ -55,7 +55,7 @@ dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
         return dstu8845(S, r, key, 64, iv);
 }
 
-void dstu8845::print()
+void dstu8845::print() const
 {
     for(uint8_t i = 0; i < 16; i++)
     {
