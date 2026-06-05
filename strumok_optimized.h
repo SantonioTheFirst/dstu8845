@@ -12,17 +12,17 @@ class dstu8845 {
 
         dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv);
 
-        static constexpr uint8_t byte(uint8_t n, uint64_t w){
+        constexpr uint8_t byte(uint8_t n, uint64_t w){
           return (((w)>>(n*8)) & 0xff);
         }
 
-        static constexpr uint64_t ainv_mul(uint64_t w){
+        constexpr uint64_t ainv_mul(uint64_t w){
           return (((w)>>8)^(this->strumok_alphainv_mul[w&0xff]));
         }
-        static constexpr uint64_t a_mul(uint64_t w){
+        constexpr uint64_t a_mul(uint64_t w){
           return (((w)<<8)^(this->strumok_alpha_mul[w>>56]));
         }
-        static constexpr uint64_t T(uint64_t w){
+        constexpr uint64_t T(uint64_t w){
           return ((this->T0[this->byte(0,(w))])^(this->T1[this->byte(1,(w))])^(this->T2[this->byte(2,(w))])^(this->T3[this->byte(3,(w))])^(this->T4[this->byte(4,(w))])^(this->T5[this->byte(5,(w))])^(this->T6[this->byte(6,(w))])^(this->T7[this->byte(7,(w))]));
         }
         alignas(64) static constexpr uint64_t strumok_alpha_mul[256] = {
