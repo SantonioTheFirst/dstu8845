@@ -27,10 +27,9 @@ dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, co
     //    this->S[15] = tmp;
     //    this->z_0 |= ((((this->S[0] ^ this->r[1] ^ (this->r[0] + this->S[15]))) & 1) << i);
     //}
+        uint64_t outfrom_fsm, fsmtmp;
         for(uint8_t i = 0; i < 2; i++)
         {
-            static uint64_t outfrom_fsm, fsmtmp;
-
             outfrom_fsm = (this->r[0] + this->S[15]) ^ this->r[1];
             this->S[0] = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]) ^ outfrom_fsm;
             fsmtmp = this->r[1] + this->S[13];
