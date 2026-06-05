@@ -303,6 +303,108 @@ void dstu8845::next_stream(uint64_t *out_stream)
     out_stream[15] = (this->r[0] + this->S[15]) ^ this->r[1] ^ this->S[0];
 }
 
+void dstu8845::next_stream_full_crypt(uint64_t *in, uint64_t *out)
+{
+    uint64_t fsmtmp;
+
+    this->S[0] = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]);
+    fsmtmp = this->r[1] + this->S[13];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[0] = in[0] ^ (this->r[0] + this->S[0]) ^ this->r[1] ^ this->S[1];
+
+    this->S[1] = this->a_mul(this->S[1]) ^ this->S[14] ^ this->ainv_mul(this->S[12]);
+    fsmtmp = this->r[1] + this->S[14];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[1] = in[1] ^ (this->r[0] + this->S[1]) ^ this->r[1] ^ this->S[2];
+
+    this->S[2] = this->a_mul(this->S[2]) ^ this->S[15] ^ this->ainv_mul(this->S[13]);
+    fsmtmp = this->r[1] + this->S[15];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[2] = in[2] ^ (this->r[0] + this->S[2]) ^ this->r[1] ^ this->S[3];
+
+    this->S[3] = this->a_mul(this->S[3]) ^ this->S[0] ^ this->ainv_mul(this->S[14]);
+    fsmtmp = this->r[1] + this->S[0];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[3] = in[3] ^ (this->r[0] + this->S[3]) ^ this->r[1] ^ this->S[4];
+
+    this->S[4] = this->a_mul(this->S[4]) ^ this->S[1] ^ this->ainv_mul(this->S[15]);
+    fsmtmp = this->r[1] + this->S[1];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[4] = in[4] ^ (this->r[0] + this->S[4]) ^ this->r[1] ^ this->S[5];
+
+    this->S[5] = this->a_mul(this->S[5]) ^ this->S[2] ^ this->ainv_mul(this->S[0]);
+    fsmtmp = this->r[1] + this->S[2];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[5] = in[5] ^ (this->r[0] + this->S[5]) ^ this->r[1] ^ this->S[6];
+
+    this->S[6] = this->a_mul(this->S[6]) ^ this->S[3] ^ this->ainv_mul(this->S[1]);
+    fsmtmp = this->r[1] + this->S[3];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[6] = in[6] ^ (this->r[0] + this->S[6]) ^ this->r[1] ^ this->S[7];
+
+    this->S[7] = this->a_mul(this->S[7]) ^ this->S[4] ^ this->ainv_mul(this->S[2]);
+    fsmtmp = this->r[1] + this->S[4];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[7] = in[7] ^ (this->r[0] + this->S[7]) ^ this->r[1] ^ this->S[8];
+
+    this->S[8] = this->a_mul(this->S[8]) ^ this->S[5] ^ this->ainv_mul(this->S[3]);
+    fsmtmp = this->r[1] + this->S[5];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[8] = in[8] ^ (this->r[0] + this->S[8]) ^ this->r[1] ^ this->S[9];
+
+    this->S[9] = this->a_mul(this->S[9]) ^ this->S[6] ^ this->ainv_mul(this->S[4]);
+    fsmtmp = this->r[1] + this->S[6];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[9] = in[9] ^ (this->r[0] + this->S[9]) ^ this->r[1] ^ this->S[10];
+
+    this->S[10] = this->a_mul(this->S[10]) ^ this->S[7] ^ this->ainv_mul(this->S[5]);
+    fsmtmp = this->r[1] + this->S[7];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[10] = in[10] ^ (this->r[0] + this->S[10]) ^ this->r[1] ^ this->S[11];
+
+    this->S[11] = this->a_mul(this->S[11]) ^ this->S[8] ^ this->ainv_mul(this->S[6]);
+    fsmtmp = this->r[1] + this->S[8];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[11] = in[11] ^ (this->r[0] + this->S[11]) ^ this->r[1] ^ this->S[12];
+
+    this->S[12] = this->a_mul(this->S[12]) ^ this->S[9] ^ this->ainv_mul(this->S[7]);
+    fsmtmp = this->r[1] + this->S[9];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[12] = in[12] ^ (this->r[0] + this->S[12]) ^ this->r[1] ^ this->S[13];
+
+    this->S[13] = this->a_mul(this->S[13]) ^ this->S[10] ^ this->ainv_mul(this->S[8]);
+    fsmtmp = this->r[1] + this->S[10];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[13] = in[13] ^ (this->r[0] + this->S[13]) ^ this->r[1] ^ this->S[14];
+
+    this->S[14] = this->a_mul(this->S[14]) ^ this->S[11] ^ this->ainv_mul(this->S[9]);
+    fsmtmp = this->r[1] + this->S[11];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[14] = in[14] ^ (this->r[0] + this->S[14]) ^ this->r[1] ^ this->S[15];
+
+    this->S[15] = this->a_mul(this->S[15]) ^ this->S[12] ^ this->ainv_mul(this->S[10]);
+    fsmtmp = this->r[1] + this->S[12];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out[15] = in[15] ^ (this->r[0] + this->S[15]) ^ this->r[1] ^ this->S[0];
+}
+
+
 void dstu8845::dstu8845_crypt(const uint64_t *in, uint64_t *out, const uint64_t inl)
 {
     for(uint64_t i = 0; i < inl; i++)
