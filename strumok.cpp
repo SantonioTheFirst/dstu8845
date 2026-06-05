@@ -183,23 +183,124 @@ void dstu8845::print() const
     cout << "r_1: 0x" << hex << uppercase << setfill('0') << setw(16) << this->r[1] << dec << nouppercase << "\n";
 }
     
-uint64_t dstu8845::next_stream()
+//uint64_t dstu8845::next_stream()
+//{
+//  uint64_t fsmtmp, tmp, out_stream;
+
+//  tmp = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]);
+//  fsmtmp = this->r[1] + this->S[13];
+//  this->r[1] = this->T(this->r[0]);
+//  this->r[0] = fsmtmp;
+//  out_stream = (this->r[0] + tmp) ^ this->r[1] ^ this->S[1];
+
+//  for(uint8_t i = 0; i < 15; ++i)
+//  {
+//    this->S[i] = this->S[i + 1];
+//  }
+//  this->S[15] = tmp;
+
+//  return out_stream;
+//}
+
+void dstu8845::next_stream(uint64_t *out_stream)
 {
-  uint64_t fsmtmp, tmp, out_stream;
+    uint64_t fsmtmp;
 
-  tmp = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]);
-  fsmtmp = this->r[1] + this->S[13];
-  this->r[1] = this->T(this->r[0]);
-  this->r[0] = fsmtmp;
-  out_stream = (this->r[0] + tmp) ^ this->r[1] ^ this->S[1];
+    this->S[0] = this->a_mul(this->S[0]) ^ this->S[13] ^ this->ainv_mul(this->S[11]);
+    fsmtmp = this->r[1] + this->S[13];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[0] = (this->r[0] + this->S[0]) ^ this->r[1] ^ this->S[1];
 
-  for(uint8_t i = 0; i < 15; ++i)
-  {
-    this->S[i] = this->S[i + 1];
-  }
-  this->S[15] = tmp;
+    this->S[1] = this->a_mul(this->S[1]) ^ this->S[14] ^ this->ainv_mul(this->S[12]);
+    fsmtmp = this->r[1] + this->S[14];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[1] = (this->r[0] + this->S[1]) ^ this->r[1] ^ this->S[2];
 
-  return out_stream;
+    this->S[2] = this->a_mul(this->S[2]) ^ this->S[15] ^ this->ainv_mul(this->S[13]);
+    fsmtmp = this->r[1] + this->S[15];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[2] = (this->r[0] + this->S[2]) ^ this->r[1] ^ this->S[3];
+
+    this->S[3] = this->a_mul(this->S[3]) ^ this->S[0] ^ this->ainv_mul(this->S[14]);
+    fsmtmp = this->r[1] + this->S[0];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[3] = (this->r[0] + this->S[3]) ^ this->r[1] ^ this->S[4];
+
+    this->S[4] = this->a_mul(this->S[4]) ^ this->S[1] ^ this->ainv_mul(this->S[15]);
+    fsmtmp = this->r[1] + this->S[1];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[4] = (this->r[0] + this->S[4]) ^ this->r[1] ^ this->S[5];
+
+    this->S[5] = this->a_mul(this->S[5]) ^ this->S[2] ^ this->ainv_mul(this->S[0]);
+    fsmtmp = this->r[1] + this->S[2];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[5] = (this->r[0] + this->S[5]) ^ this->r[1] ^ this->S[6];
+
+    this->S[6] = this->a_mul(this->S[6]) ^ this->S[3] ^ this->ainv_mul(this->S[1]);
+    fsmtmp = this->r[1] + this->S[3];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[6] = (this->r[0] + this->S[6]) ^ this->r[1] ^ this->S[7];
+
+    this->S[7] = this->a_mul(this->S[7]) ^ this->S[4] ^ this->ainv_mul(this->S[2]);
+    fsmtmp = this->r[1] + this->S[4];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[7] = (this->r[0] + this->S[7]) ^ this->r[1] ^ this->S[8];
+
+    this->S[8] = this->a_mul(this->S[8]) ^ this->S[5] ^ this->ainv_mul(this->S[3]);
+    fsmtmp = this->r[1] + this->S[5];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[8] = (this->r[0] + this->S[8]) ^ this->r[1] ^ this->S[9];
+
+    this->S[9] = this->a_mul(this->S[9]) ^ this->S[6] ^ this->ainv_mul(this->S[4]);
+    fsmtmp = this->r[1] + this->S[6];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[9] = (this->r[0] + this->S[9]) ^ this->r[1] ^ this->S[10];
+
+    this->S[10] = this->a_mul(this->S[10]) ^ this->S[7] ^ this->ainv_mul(this->S[5]);
+    fsmtmp = this->r[1] + this->S[7];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[10] = (this->r[0] + this->S[10]) ^ this->r[1] ^ this->S[11];
+
+    this->S[11] = this->a_mul(this->S[11]) ^ this->S[8] ^ this->ainv_mul(this->S[6]);
+    fsmtmp = this->r[1] + this->S[8];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[11] = (this->r[0] + this->S[11]) ^ this->r[1] ^ this->S[12];
+
+    this->S[12] = this->a_mul(this->S[12]) ^ this->S[9] ^ this->ainv_mul(this->S[7]);
+    fsmtmp = this->r[1] + this->S[9];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[12] = (this->r[0] + this->S[12]) ^ this->r[1] ^ this->S[13];
+
+    this->S[13] = this->a_mul(this->S[13]) ^ this->S[10] ^ this->ainv_mul(this->S[8]);
+    fsmtmp = this->r[1] + this->S[10];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[13] = (this->r[0] + this->S[13]) ^ this->r[1] ^ this->S[14];
+
+    this->S[14] = this->a_mul(this->S[14]) ^ this->S[11] ^ this->ainv_mul(this->S[9]);
+    fsmtmp = this->r[1] + this->S[11];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[14] = (this->r[0] + this->S[14]) ^ this->r[1] ^ this->S[15];
+
+    this->S[15] = this->a_mul(this->S[15]) ^ this->S[12] ^ this->ainv_mul(this->S[10]);
+    fsmtmp = this->r[1] + this->S[12];
+    this->r[1] = this->T(this->r[0]);
+    this->r[0] = fsmtmp;
+    out_stream[15] = (this->r[0] + this->S[15]) ^ this->r[1] ^ this->S[0];
 }
 
 void dstu8845::dstu8845_crypt(const uint64_t *in, uint64_t *out, const uint64_t inl)
