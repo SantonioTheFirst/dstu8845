@@ -22,13 +22,13 @@ int main()
     key[0] = 0x0000000000000000;
 
     clock_t begin = clock();
-    for(uint64_t i = 0; i < 1000000000; i++)
+    for(uint64_t i = 0; i < 1000'000; i++)
     {
         dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
     }
     clock_t end = clock();
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000000000 / time_spent << "\n";
+    cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
 
     dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
     cipher.print();
