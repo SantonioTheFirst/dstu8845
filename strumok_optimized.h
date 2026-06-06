@@ -11,19 +11,19 @@ class dstu8845 {
 
         dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv);
 
-        static constexpr uint8_t byte(uint8_t n, uint64_t w){
-          return (((w)>>(n*8))&0xff);
-        }
+        //static constexpr uint8_t byte(uint8_t n, uint64_t w){
+        //  return (((w)>>(n*8))&0xff);
+        //}
 
-        static constexpr uint64_t ainv_mul(uint64_t w){
-          return (((w)>>8)^(strumok_alphainv_mul[w&0xff]));
-        }
-        static constexpr uint64_t a_mul(uint64_t w){
-          return (((w)<<8)^(strumok_alpha_mul[w>>56]));
-        }
-        static constexpr uint64_t T(uint64_t w){
-          return ((T0[byte(0,(w))])^(T1[byte(1,(w))])^(T2[byte(2,(w))])^(T3[byte(3,(w))])^(T4[byte(4,(w))])^(T5[byte(5,(w))])^(T6[byte(6,(w))])^(T7[byte(7,(w))]));
-        }
+        //static constexpr uint64_t ainv_mul(uint64_t w){
+        //  return (((w)>>8)^(strumok_alphainv_mul[w&0xff]));
+        //}
+        //static constexpr uint64_t a_mul(uint64_t w){
+        //  return (((w)<<8)^(strumok_alpha_mul[w>>56]));
+        //}
+        //static constexpr uint64_t T(uint64_t w){
+        //  return ((T0[byte(0,(w))])^(T1[byte(1,(w))])^(T2[byte(2,(w))])^(T3[byte(3,(w))])^(T4[byte(4,(w))])^(T5[byte(5,(w))])^(T6[byte(6,(w))])^(T7[byte(7,(w))]));
+        //}
         alignas(64) static constexpr uint64_t strumok_alpha_mul[256] = {
             0x0000000000000000ULL, 0xD73F04125E000004ULL, 0xB37E0824BC000008ULL, 0x64410C36E200000CULL,
             0x7BFC104865000010ULL, 0xACC3145A3B000014ULL, 0xC882186CD9000018ULL, 0x1FBD1C7E8700001CULL,
