@@ -4,7 +4,7 @@
 #include <iomanip>
 using namespace std;
 
-__attribute__((always_inline)) dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv)
+inline __attribute__((always_inline)) dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv)
 {   
     memcpy(this->S, S, 128);
     memcpy(this->r, r, 16);
@@ -129,7 +129,7 @@ __attribute__((always_inline)) dstu8845::dstu8845(const uint64_t *S, const uint6
     }
 }
 
-__attribute__((always_inline)) dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
+inline __attribute__((always_inline)) dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
 {
         uint64_t S[16];
         uint64_t r[2];
