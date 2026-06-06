@@ -22,7 +22,7 @@ int main()
         z_0 = cipher.z_0;
     }
     clock_t end = clock();
-    cout << z << "\n";
+    cout << z_0 << "\n";
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000'000 / time_spent << "\n";
