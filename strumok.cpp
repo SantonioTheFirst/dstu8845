@@ -129,7 +129,7 @@ inline __attribute__((always_inline)) dstu8845::dstu8845(const uint64_t *S, cons
     }
 }
 
-inline __attribute__((always_inline)) dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
+dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
 {
         uint64_t S[16];
         uint64_t r[2];
