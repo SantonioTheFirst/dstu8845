@@ -4,6 +4,10 @@
 #include <iomanip>
 using namespace std;
 
+#define byte(n,w)   (((w)>>(n*8)) & 0xff)
+#define ainv_mul(w) (((w)>>8)^(strumok_alphainv_mul[w&0xff]))
+#define a_mul(w)    (((w)<<8)^(strumok_alpha_mul[w>>56]))
+#define T(w)        ((T0[byte(0,(w))])^(T1[byte(1,(w))])^(T2[byte(2,(w))])^(T3[byte(3,(w))])^(T4[byte(4,(w))])^(T5[byte(5,(w))])^(T6[byte(6,(w))])^(T7[byte(7,(w))]))
 
 dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv)
 {   
