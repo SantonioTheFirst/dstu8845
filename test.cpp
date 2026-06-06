@@ -5,20 +5,25 @@
 int main()
 {
     using namespace std;
-    alignas(64) const uint64_t key[8] = {
+    alignas(64) uint64_t key[8] = {
     0x0000000000000000, 0x0000000000000000,
     0x0000000000000000, 0x0000000000000000,
     0x0000000000000000, 0x0000000000000000,
     0x0000000000000000, 0x8000000000000000
     };
-    alignas(64) const uint64_t iv[4] = {1, 2, 3, 4};
+    alignas(64) uint64_t iv[4] = {1, 2, 3, 4};
 
+    uint32_t z_0 = 0;
     clock_t begin = clock();
     for(uint64_t i = 0; i < 1000'000'000; i++)
     {
+        key[0] = i;
         dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
+        z_0 = cipher.z_0;
     }
     clock_t end = clock();
+    cout << z << "\n";
+    
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000'000 / time_spent << "\n";
 
