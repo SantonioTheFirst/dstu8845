@@ -15,7 +15,7 @@ int main()
 
     uint32_t z_0 = 0;
     clock_t begin = clock();
-    for(uint64_t i = 0; i < 1000'000'000; i++)
+    for(uint64_t i = 0; i < 1000'000; i++)
     {
         key[0] = i;
         dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
@@ -25,7 +25,7 @@ int main()
     cout << z_0 << "\n";
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000'000 / time_spent << "\n";
+    cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
 
     dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
     cipher.print();
