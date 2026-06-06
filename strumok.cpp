@@ -279,8 +279,8 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
     l_r[0] = this->r[0];
     l_r[1] = this->r[1];
 
-    const uint64_t *in64 = reinterpret_cast<const uint64_t*>(in);
-    uint64_t *out64 = reinterpret_cast<uint64_t*>(out);
+    const uint64_t * __restrict in64 = (const uint64_t*)__builtin_assume_aligned(in, 64);
+    uint64_t * __restrict out64 = (uint64_t*)__builtin_assume_aligned(out, 64);
     uint64_t blocks = inl / 128;
 
     while (blocks--)
