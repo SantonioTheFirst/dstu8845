@@ -291,97 +291,97 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         fsmtmp = l_r[1] + l_S[13];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[0] = in64[0] ^ (l_r[0] + l_S[0]) ^ l_r[1] ^ l_S[1];
+        out64[0] = (in64[0] ^ l_S[1]) ^ ((l_r[0] + l_S[0]) ^ l_r[1]);
 
         l_S[1] = a_mul(l_S[1]) ^ l_S[14] ^ ainv_mul(l_S[12]);
         fsmtmp = l_r[1] + l_S[14];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[1] = in64[1] ^ (l_r[0] + l_S[1]) ^ l_r[1] ^ l_S[2];
+        out64[1] = (in64[1] ^ l_S[2]) ^ ((l_r[0] + l_S[1]) ^ l_r[1]);
 
         l_S[2] = a_mul(l_S[2]) ^ l_S[15] ^ ainv_mul(l_S[13]);
         fsmtmp = l_r[1] + l_S[15];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[2] = in64[2] ^ (l_r[0] + l_S[2]) ^ l_r[1] ^ l_S[3];
+        out64[2] = (in64[2] ^ l_S[3]) ^ ((l_r[0] + l_S[2]) ^ l_r[1]);
 
         l_S[3] = a_mul(l_S[3]) ^ l_S[0] ^ ainv_mul(l_S[14]);
         fsmtmp = l_r[1] + l_S[0];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[3] = in64[3] ^ (l_r[0] + l_S[3]) ^ l_r[1] ^ l_S[4];
+        out64[3] = (in64[3] ^ l_S[4]) ^ ((l_r[0] + l_S[3]) ^ l_r[1]);
 
         l_S[4] = a_mul(l_S[4]) ^ l_S[1] ^ ainv_mul(l_S[15]);
         fsmtmp = l_r[1] + l_S[1];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[4] = in64[4] ^ (l_r[0] + l_S[4]) ^ l_r[1] ^ l_S[5];
+        out64[4] = (in64[4] ^ l_S[5]) ^ ((l_r[0] + l_S[4]) ^ l_r[1]);
 
         l_S[5] = a_mul(l_S[5]) ^ l_S[2] ^ ainv_mul(l_S[0]);
         fsmtmp = l_r[1] + l_S[2];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[5] = in64[5] ^ (l_r[0] + l_S[5]) ^ l_r[1] ^ l_S[6];
+        out64[5] = (in64[5] ^ l_S[6]) ^ ((l_r[0] + l_S[5]) ^ l_r[1]);
 
         l_S[6] = a_mul(l_S[6]) ^ l_S[3] ^ ainv_mul(l_S[1]);
         fsmtmp = l_r[1] + l_S[3];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[6] = in64[6] ^ (l_r[0] + l_S[6]) ^ l_r[1] ^ l_S[7];
+        out64[6] = (in64[6] ^ l_S[7]) ^ ((l_r[0] + l_S[6]) ^ l_r[1]);
 
         l_S[7] = a_mul(l_S[7]) ^ l_S[4] ^ ainv_mul(l_S[2]);
         fsmtmp = l_r[1] + l_S[4];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[7] = in64[7] ^ (l_r[0] + l_S[7]) ^ l_r[1] ^ l_S[8];
+        out64[7] = (in64[7] ^ l_S[8]) ^ ((l_r[0] + l_S[7]) ^ l_r[1]);
 
         l_S[8] = a_mul(l_S[8]) ^ l_S[5] ^ ainv_mul(l_S[3]);
         fsmtmp = l_r[1] + l_S[5];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[8] = in64[8] ^ (l_r[0] + l_S[8]) ^ l_r[1] ^ l_S[9];
+        out64[8] = (in64[8] ^ l_S[9]) ^ ((l_r[0] + l_S[8]) ^ l_r[1]);
 
         l_S[9] = a_mul(l_S[9]) ^ l_S[6] ^ ainv_mul(l_S[4]);
         fsmtmp = l_r[1] + l_S[6];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[9] = in64[9] ^ (l_r[0] + l_S[9]) ^ l_r[1] ^ l_S[10];
+        out64[9] = (in64[9] ^ l_S[10]) ^ ((l_r[0] + l_S[9]) ^ l_r[1]);
 
         l_S[10] = a_mul(l_S[10]) ^ l_S[7] ^ ainv_mul(l_S[5]);
         fsmtmp = l_r[1] + l_S[7];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[10] = in64[10] ^ (l_r[0] + l_S[10]) ^ l_r[1] ^ l_S[11];
+        out64[10] = (in64[10] ^ l_S[11]) ^ ((l_r[0] + l_S[10]) ^ l_r[1]);
 
         l_S[11] = a_mul(l_S[11]) ^ l_S[8] ^ ainv_mul(l_S[6]);
         fsmtmp = l_r[1] + l_S[8];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[11] = in64[11] ^ (l_r[0] + l_S[11]) ^ l_r[1] ^ l_S[12];
+        out64[11] = (in64[11] ^ l_S[12]) ^ ((l_r[0] + l_S[11]) ^ l_r[1]);
 
         l_S[12] = a_mul(l_S[12]) ^ l_S[9] ^ ainv_mul(l_S[7]);
         fsmtmp = l_r[1] + l_S[9];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[12] = in64[12] ^ (l_r[0] + l_S[12]) ^ l_r[1] ^ l_S[13];
+        out64[12] = (in64[12] ^ l_S[13]) ^ ((l_r[0] + l_S[12]) ^ l_r[1]);
 
         l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]);
         fsmtmp = l_r[1] + l_S[10];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[13] = in64[13] ^ (l_r[0] + l_S[13]) ^ l_r[1] ^ l_S[14];
+        out64[13] = (in64[13] ^ l_S[14]) ^ ((l_r[0] + l_S[13]) ^ l_r[1]);
 
         l_S[14] = a_mul(l_S[14]) ^ l_S[11] ^ ainv_mul(l_S[9]);
         fsmtmp = l_r[1] + l_S[11];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[14] = in64[14] ^ (l_r[0] + l_S[14]) ^ l_r[1] ^ l_S[15];
+        out64[14] = (in64[14] ^ l_S[15]) ^ ((l_r[0] + l_S[14]) ^ l_r[1]);
 
         l_S[15] = a_mul(l_S[15]) ^ l_S[12] ^ ainv_mul(l_S[10]);
         fsmtmp = l_r[1] + l_S[12];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        out64[15] = in64[15] ^ (l_r[0] + l_S[15]) ^ l_r[1] ^ l_S[0];
+        out64[15] = (in64[15] ^ l_S[0]) ^ ((l_r[0] + l_S[15]) ^ l_r[1]);
 
         in64 += 16;
         out64 += 16;
