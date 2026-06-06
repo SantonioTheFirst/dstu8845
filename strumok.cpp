@@ -535,11 +535,10 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         // Векторизуем хвост кусками по 8 байт
         const uint64_t *in_tail64 = reinterpret_cast<const uint64_t*>(in + offset);
         uint64_t *out_tail64 = reinterpret_cast<uint64_t*>(out + offset);
-        const uint64_t *ks64 = reinterpret_cast<const uint64_t*>(keystream);
 
         for(uint64_t i = 0; i < words; ++i)
         {
-            out_tail64[i] = in_tail64[i] ^ ks64[i];
+            out_tail64[i] = in_tail64[i] ^ keystream[i];
         }
 
         // Добиваем оставшиеся единичные байты
@@ -555,4 +554,3 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         }
     }
 }
-
