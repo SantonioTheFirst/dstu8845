@@ -5,8 +5,8 @@
 int main()
 {
     using namespace std;
-    uint64_t key[8];
-    uint64_t iv[4];
+    alignas(64) const uint64_t key[8];
+    alignas(64) const uint64_t iv[4];
     iv[0] = 1;
     iv[1] = 2;
     iv[2] = 3;
@@ -33,8 +33,8 @@ int main()
     dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
     cipher.print();
 
-    const uint8_t in[4096] = {0};
-    uint8_t out[4096] = {0};
+    alignas(64) const uint8_t in[4096] = {0};
+    alignas(64) uint8_t out[4096] = {0};
     
     begin = clock();
     for(uint64_t i = 0; i < 1024 * 15 * 256; i++)
