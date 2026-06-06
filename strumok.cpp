@@ -390,3 +390,169 @@ void dstu8845::next_stream_full_crypt(uint64_t * __restrict in, uint64_t * __res
 //        }
 //    }
 //}
+
+void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restrict out, uint64_t inl)
+{
+    // 1. Копируем состояние класса на стек для работы в быстрых регистрах
+    uint64_t l_S[16];
+    uint64_t l_r[2];
+    
+    for(uint8_t i = 0; i < 16; ++i)
+    {
+        l_S[i] = this->S[i];
+    }
+    l_r[0] = this->r[0];
+    l_r[1] = this->r[1];
+
+    const uint64_t *in64 = reinterpret_cast<const uint64_t*>(in);
+    uint64_t *out64 = reinterpret_cast<uint64_t*>(out);
+    uint64_t blocks = inl / 128;
+
+    // 2. Основной цикл вычислений 128-байтных блоков
+    while (blocks--)
+    {
+        uint64_t fsmtmp;
+
+        l_S[0] = a_mul(l_S[0]) ^ l_S[13] ^ ainv_mul(l_S[11]);
+        fsmtmp = l_r[1] + l_S[13];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[0] = in64[0] ^ (l_r[0] + l_S[0]) ^ l_r[1] ^ l_S[1];
+
+        l_S[1] = a_mul(l_S[1]) ^ l_S[14] ^ ainv_mul(l_S[12]);
+        fsmtmp = l_r[1] + l_S[14];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[1] = in64[1] ^ (l_r[0] + l_S[1]) ^ l_r[1] ^ l_S[2];
+
+        l_S[2] = a_mul(l_S[2]) ^ l_S[15] ^ ainv_mul(l_S[13]);
+        fsmtmp = l_r[1] + l_S[15];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[2] = in64[2] ^ (l_r[0] + l_S[2]) ^ l_r[1] ^ l_S[3];
+
+        l_S[3] = a_mul(l_S[3]) ^ l_S[0] ^ ainv_mul(l_S[14]);
+        fsmtmp = l_r[1] + l_S[0];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[3] = in64[3] ^ (l_r[0] + l_S[3]) ^ l_r[1] ^ l_S[4];
+
+        l_S[4] = a_mul(l_S[4]) ^ l_S[1] ^ ainv_mul(l_S[15]);
+        fsmtmp = l_r[1] + l_S[1];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[4] = in64[4] ^ (l_r[0] + l_S[4]) ^ l_r[1] ^ l_S[5];
+
+        l_S[5] = a_mul(l_S[5]) ^ l_S[2] ^ ainv_mul(l_S[0]);
+        fsmtmp = l_r[1] + l_S[2];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[5] = in64[5] ^ (l_r[0] + l_S[5]) ^ l_r[1] ^ l_S[6];
+
+        l_S[6] = a_mul(l_S[6]) ^ l_S[3] ^ ainv_mul(l_S[1]);
+        fsmtmp = l_r[1] + l_S[3];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[6] = in64[6] ^ (l_r[0] + l_S[6]) ^ l_r[1] ^ l_S[7];
+
+        l_S[7] = a_mul(l_S[7]) ^ l_S[4] ^ ainv_mul(l_S[2]);
+        fsmtmp = l_r[1] + l_S[4];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[7] = in64[7] ^ (l_r[0] + l_S[7]) ^ l_r[1] ^ l_S[8];
+
+        l_S[8] = a_mul(l_S[8]) ^ l_S[5] ^ ainv_mul(l_S[3]);
+        fsmtmp = l_r[1] + l_S[5];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[8] = in64[8] ^ (l_r[0] + l_S[8]) ^ l_r[1] ^ l_S[9];
+
+        l_S[9] = a_mul(l_S[9]) ^ l_S[6] ^ ainv_mul(l_S[4]);
+        fsmtmp = l_r[1] + l_S[6];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[9] = in64[9] ^ (l_r[0] + l_S[9]) ^ l_r[1] ^ l_S[10];
+
+        l_S[10] = a_mul(l_S[10]) ^ l_S[7] ^ ainv_mul(l_S[5]);
+        fsmtmp = l_r[1] + l_S[7];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[10] = in64[10] ^ (l_r[0] + l_S[10]) ^ l_r[1] ^ l_S[11];
+
+        l_S[11] = a_mul(l_S[11]) ^ l_S[8] ^ ainv_mul(l_S[6]);
+        fsmtmp = l_r[1] + l_S[8];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[11] = in64[11] ^ (l_r[0] + l_S[11]) ^ l_r[1] ^ l_S[12];
+
+        l_S[12] = a_mul(l_S[12]) ^ l_S[9] ^ ainv_mul(l_S[7]);
+        fsmtmp = l_r[1] + l_S[9];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[12] = in64[12] ^ (l_r[0] + l_S[12]) ^ l_r[1] ^ l_S[13];
+
+        l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]);
+        fsmtmp = l_r[1] + l_S[10];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[13] = in64[13] ^ (l_r[0] + l_S[13]) ^ l_r[1] ^ l_S[14];
+
+        l_S[14] = a_mul(l_S[14]) ^ l_S[11] ^ ainv_mul(l_S[9]);
+        fsmtmp = l_r[1] + l_S[11];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[14] = in64[14] ^ (l_r[0] + l_S[14]) ^ l_r[1] ^ l_S[15];
+
+        l_S[15] = a_mul(l_S[15]) ^ l_S[12] ^ ainv_mul(l_S[10]);
+        fsmtmp = l_r[1] + l_S[12];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        out64[15] = in64[15] ^ (l_r[0] + l_S[15]) ^ l_r[1] ^ l_S[0];
+
+        in64 += 16;
+        out64 += 16;
+    }
+
+    // 3. Возвращаем состояние обратно в класс
+    for(uint8_t i = 0; i < 16; ++i)
+    {
+        this->S[i] = l_S[i];
+    }
+    this->r[0] = l_r[0];
+    this->r[1] = l_r[1];
+
+    // 4. Оптимизированная обработка хвоста
+    uint8_t tail = inl % 128;
+    if(tail > 0)
+    {
+        uint64_t keystream[16];
+        this->next_stream(keystream); 
+
+        uint64_t offset = inl - tail; // Байтовое смещение начала хвоста
+        uint64_t words = tail / 8;    // Полных 64-битных слов
+        uint8_t bytes = tail % 8;    // Оставшихся байт
+
+        // Векторизуем хвост кусками по 8 байт
+        const uint64_t *in_tail64 = reinterpret_cast<const uint64_t*>(in + offset);
+        uint64_t *out_tail64 = reinterpret_cast<uint64_t*>(out + offset);
+        const uint64_t *ks64 = reinterpret_cast<const uint64_t*>(keystream);
+
+        for(uint64_t i = 0; i < words; ++i)
+        {
+            out_tail64[i] = in_tail64[i] ^ ks64[i];
+        }
+
+        // Добиваем оставшиеся единичные байты
+        if(bytes > 0) {
+            const uint8_t *in_tail8 = in + offset + words * 8;
+            uint8_t *out_tail8 = out + offset + words * 8;
+            const uint8_t *ks8 = reinterpret_cast<const uint8_t*>(keystream) + words * 8;
+
+            for(uint8_t i = 0; i < bytes; ++i)
+            {
+                out_tail8[i] = in_tail8[i] ^ ks8[i];
+            }
+        }
+    }
+}
+
