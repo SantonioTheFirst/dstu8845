@@ -33,7 +33,7 @@ int main()
         cipher.dstu8845_crypt(in, out, 4096);
     }
     clock_t end = clock();
-    cout << reinterpret_cast<unsigned>(out[0]) << endl;
+    cout << (unsigned) out[0] << endl;
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
