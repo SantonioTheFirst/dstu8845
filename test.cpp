@@ -28,7 +28,7 @@ int main()
     uint8_t out[4096] = {0};
     
     clock_t begin = clock();
-    for(uint64_t i = 0; i < 1024 * 128 * 256; i++)
+    for(uint64_t i = 0; i < 1024 * 15 * 256; i++)
     {
         cipher.dstu8845_crypt(in, out, 4096);
     }
@@ -37,8 +37,8 @@ int main()
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
 
-    cout << "Encrypted 128 GB in " << time_spent << " seconds\n";
-    cout << "Speed is " << ((1 / ((time_spent * 1.0) / 128)) * 8) << " Gb/s\n";
+    cout << "Encrypted 15 GB in " << time_spent << " seconds\n";
+    cout << "Speed is " << ((1 / ((time_spent * 1.0) / 15)) * 8) << " Gb/s\n";
 
     return 0;
 }
