@@ -702,8 +702,8 @@ class dstu8845 {
         };
 
 public:
-    static __attribute__((always_inline)) dstu8845 dstu8845_512(const uint64_t *key, const uint64_t *iv);
-    static __attribute__((always_inline)) dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
+    static inline __attribute__((always_inline)) dstu8845 dstu8845_512(const uint64_t *key, const uint64_t *iv);
+    static inline __attribute__((always_inline)) dstu8845 dstu8845_256(const uint64_t *key, const uint64_t *iv);
     void dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restrict out, const uint64_t inl);
     void next_stream(uint64_t *out);
     void next_stream_full_crypt(uint64_t * __restrict in, uint64_t * __restrict out);
