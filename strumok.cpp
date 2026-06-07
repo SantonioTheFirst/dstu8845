@@ -283,9 +283,9 @@ void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t
 
     // Финальная выгрузка готового состояния в память объекта
     __builtin_memcpy(this->S, l_S, 128);
-    ctx.r[0] = l_r[0];
-    ctx.r[1] = l_r[1];
-    ctx.z_0 = l_z0;
+    this->r[0] = l_r[0];
+    this->r[1] = l_r[1];
+    this->z_0 = l_z0;
 
     //return ctx;
 }
