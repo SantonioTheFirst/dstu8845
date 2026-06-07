@@ -9,7 +9,7 @@ class dstu8845 {
         alignas(64) uint64_t  key[8];
         alignas(64) uint64_t  iv[4];
 
-        dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv);
+        //dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv);
 
         static inline __attribute__((always_inline)) constexpr uint8_t byte(uint8_t n, uint64_t w)
         {
