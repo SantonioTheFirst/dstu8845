@@ -17,7 +17,6 @@ int main()
     clock_t begin = clock();
     for(uint64_t i = 0; i < 1000'000; i++)
     {
-        key[0] = i;
         dstu8845 cipher = dstu8845::dstu8845_512_fast(key, iv);
         z_0 = cipher.z_0;
     }
