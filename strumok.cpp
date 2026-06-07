@@ -129,13 +129,13 @@ using namespace std;
 //    }
 //}
 
-void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
+dstu8845 dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
 {
-    //dstu8845 ctx;
+    dstu8845 ctx;
     
     // Копируем ключи прямо в итоговый контекст
-    __builtin_memcpy(this->key, key, 64);
-    __builtin_memcpy(this->iv, iv, 32);
+    __builtin_memcpy(ctx.key, key, 64);
+    __builtin_memcpy(ctx.iv, iv, 32);
 
     // Локальные регистры для агрессивной оптимизации (компилятор удержит их в YMM/R8-R15)
     alignas(64) uint64_t l_S[16];
@@ -282,12 +282,12 @@ void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t
     }
 
     // Финальная выгрузка готового состояния в память объекта
-    __builtin_memcpy(this->S, l_S, 128);
-    this->r[0] = l_r[0];
-    this->r[1] = l_r[1];
-    this->z_0 = l_z0;
+    __builtin_memcpy(ctx.S, l_S, 128);
+    ctx.r[0] = l_r[0];
+    ctx.r[1] = l_r[1];
+    ctx.z_0 = l_z0;
 
-    //return ctx;
+    return ctx;
 }
 
 
