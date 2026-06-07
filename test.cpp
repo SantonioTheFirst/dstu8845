@@ -18,7 +18,7 @@ int main()
     for(uint64_t i = 0; i < 1000'000; i++)
     {
         key[0] = i;
-        dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
+        dstu8845 cipher = dstu8845::dstu8845_512_fast(key, iv);
         z_0 = cipher.z_0;
     }
     clock_t end = clock();
@@ -27,7 +27,7 @@ int main()
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
 
-    dstu8845 cipher = dstu8845::dstu8845_512(key, iv);
+    dstu8845 cipher = dstu8845::dstu8845_512_fast(key, iv);
     cipher.print();
 
     alignas(64) const uint8_t in[4096] = {0};
