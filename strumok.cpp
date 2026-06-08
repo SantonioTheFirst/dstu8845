@@ -157,10 +157,9 @@ inline __attribute__((always_inline)) void dstu8845::dstu8845_512_fast(const uin
     __builtin_memcpy(this->iv, iv, 32);
     __builtin_memcpy(this->S, l_S, 128);
     __builtin_memcpy(this->r, l_r, 16);
-    __builtin_memcpy(this->z_0, l_z0, 4);
     //ctx.r[0] = l_r[0];
     //ctx.r[1] = l_r[1];
-    //ctx.z_0 = l_z0;
+    this->z_0 = l_z0;
 
     //return ctx;
 }
