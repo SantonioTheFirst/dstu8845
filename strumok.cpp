@@ -4,145 +4,18 @@
 #include <iomanip>
 using namespace std;
 
-//inline __attribute__((always_inline)) dstu8845::dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv)
-//{   
-//    memcpy(this->S, S, 128);
-//    memcpy(this->r, r, 16);
-//    memcpy(this->key, key, key_size);
-//    memcpy(this->iv, iv, 32);
-//    uint64_t outfrom_fsm, fsmtmp;
-    
-//    for(uint8_t i = 0; i < 2; i++)
-//    {
-//        outfrom_fsm = (this->r[0] + this->S[15]) ^ this->r[1];
-//        this->S[0] = a_mul(this->S[0]) ^ this->S[13] ^ ainv_mul(this->S[11]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[13];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[1] ^ this->r[1] ^ (this->r[0] + this->S[0])) & 1) << (i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[0]) ^ this->r[1];
-//        this->S[1] = a_mul(this->S[1]) ^ this->S[14] ^ ainv_mul(this->S[12]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[14];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[2] ^ this->r[1] ^ (this->r[0] + this->S[1])) & 1) << (1 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[1]) ^ this->r[1];
-//        this->S[2] = a_mul(this->S[2]) ^ this->S[15] ^ ainv_mul(this->S[13]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[15];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[3] ^ this->r[1] ^ (this->r[0] + this->S[2])) & 1) << (2 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[2]) ^ this->r[1];
-//        this->S[3] = a_mul(this->S[3]) ^ this->S[0] ^ ainv_mul(this->S[14]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[0];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[4] ^ this->r[1] ^ (this->r[0] + this->S[3])) & 1) << (3 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[3]) ^ this->r[1];
-//        this->S[4] = a_mul(this->S[4]) ^ this->S[1] ^ ainv_mul(this->S[15]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[1];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[5] ^ this->r[1] ^ (this->r[0] + this->S[4])) & 1) << (4 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[4]) ^ this->r[1];
-//        this->S[5] = a_mul(this->S[5]) ^ this->S[2] ^ ainv_mul(this->S[0]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[2];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[6] ^ this->r[1] ^ (this->r[0] + this->S[5])) & 1) << (5 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[5]) ^ this->r[1];
-//        this->S[6] = a_mul(this->S[6]) ^ this->S[3] ^ ainv_mul(this->S[1]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[3];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[7] ^ this->r[1] ^ (this->r[0] + this->S[6])) & 1) << (6 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[6]) ^ this->r[1];
-//        this->S[7] = a_mul(this->S[7]) ^ this->S[4] ^ ainv_mul(this->S[2]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[4];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[8] ^ this->r[1] ^ (this->r[0] + this->S[7])) & 1) << (7 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[7]) ^ this->r[1];
-//        this->S[8] = a_mul(this->S[8]) ^ this->S[5] ^ ainv_mul(this->S[3]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[5];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[9] ^ this->r[1] ^ (this->r[0] + this->S[8])) & 1) << (8 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[8]) ^ this->r[1];
-//        this->S[9] = a_mul(this->S[9]) ^ this->S[6] ^ ainv_mul(this->S[4]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[6];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[10] ^ this->r[1] ^ (this->r[0] + this->S[9])) & 1) << (9 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[9]) ^ this->r[1];
-//        this->S[10] = a_mul(this->S[10]) ^ this->S[7] ^ ainv_mul(this->S[5]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[7];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[11] ^ this->r[1] ^ (this->r[0] + this->S[10])) & 1) << (10 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[10]) ^ this->r[1];
-//        this->S[11] = a_mul(this->S[11]) ^ this->S[8] ^ ainv_mul(this->S[6]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[8];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[12] ^ this->r[1] ^ (this->r[0] + this->S[11])) & 1) << (11 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[11]) ^ this->r[1];
-//        this->S[12] = a_mul(this->S[12]) ^ this->S[9] ^ ainv_mul(this->S[7]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[9];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[13] ^ this->r[1] ^ (this->r[0] + this->S[12])) & 1) << (12 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[12]) ^ this->r[1];
-//        this->S[13] = a_mul(this->S[13]) ^ this->S[10] ^ ainv_mul(this->S[8]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[10];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[14] ^ this->r[1] ^ (this->r[0] + this->S[13])) & 1) << (13 + i * 16);
-
-
-//        outfrom_fsm = (this->r[0] + this->S[13]) ^ this->r[1];
-//        this->S[14] = a_mul(this->S[14]) ^ this->S[11] ^ ainv_mul(this->S[9]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[11];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[15] ^ this->r[1] ^ (this->r[0] + this->S[14])) & 1) << (14 + i * 16);
-
-//        outfrom_fsm = (this->r[0] + this->S[14]) ^ this->r[1];
-//        this->S[15] = a_mul(this->S[15]) ^ this->S[12] ^ ainv_mul(this->S[10]) ^ outfrom_fsm;
-//        fsmtmp = this->r[1] + this->S[12];
-//        this->r[1] = T(this->r[0]);
-//        this->r[0] = fsmtmp;
-//        this->z_0 |= ((this->S[0] ^ this->r[1] ^ (this->r[0] + this->S[15])) & 1) << (15 + i * 16);
-//    }
-//}
 
 dstu8845 dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
 {
-    dstu8845 ctx;
+    //dstu8845 ctx;
     
-    // Копируем ключи прямо в итоговый контекст
-    __builtin_memcpy(ctx.key, key, 64);
-    __builtin_memcpy(ctx.iv, iv, 32);
+    //__builtin_memcpy(ctx.key, key, 64);
+    //__builtin_memcpy(ctx.iv, iv, 32);
 
-    // Локальные регистры для агрессивной оптимизации (компилятор удержит их в YMM/R8-R15)
     alignas(64) uint64_t l_S[16];
     uint64_t l_r[2] = {0, 0};
     uint32_t l_z0 = 0;
 
-    // Векторизуемый ввод 512-битного ключа
     l_S[0]  = key[7] ^ iv[0];
     l_S[1]  = key[6];
     l_S[2]  = key[5];
@@ -162,7 +35,6 @@ dstu8845 dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint
 
     uint64_t outfrom_fsm, fsmtmp;
     
-    // Изолированная FSM: работает исключительно с локальными регистрами
     #pragma GCC unroll 2
     for(uint8_t i = 0; i < 2; i++)
     {
@@ -281,41 +153,17 @@ dstu8845 dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint
         l_z0 |= ((l_S[0] ^ l_r[1] ^ (l_r[0] + l_S[15])) & 1) << (15 + shift);
     }
 
-    // Финальная выгрузка готового состояния в память объекта
-    __builtin_memcpy(ctx.S, l_S, 128);
-    ctx.r[0] = l_r[0];
-    ctx.r[1] = l_r[1];
-    ctx.z_0 = l_z0;
+    __builtin_memcpy(this->key, key, 64);
+    __builtin_memcpy(this->iv, iv, 32);
+    __builtin_memcpy(this->S, l_S, 128);
+    __builtin_memcpy(this->r, l_r, 16);
+    __builtin_memcpy(this->z_0, l_z0, 4);
+    //ctx.r[0] = l_r[0];
+    //ctx.r[1] = l_r[1];
+    //ctx.z_0 = l_z0;
 
-    return ctx;
+    //return ctx;
 }
-
-
-//dstu8845 dstu8845::dstu8845_512(const uint64_t *key, const uint64_t *iv)
-//{
-//        uint64_t S[16];
-//        uint64_t r[2];
-
-//        S[0] = key[7] ^ iv[0];
-//        S[1] = key[6];
-//        S[2] = key[5];
-//        S[3] = key[4] ^ iv[1];
-//        S[4] = key[3];
-//        S[5] = key[2] ^ iv[2];
-//        S[6] = key[1];
-//        S[7] = ~key[0];
-//        S[8] = key[4] ^ iv[3];
-//        S[9] = ~key[6];
-//        S[10] = key[5];
-//        S[11] = ~key[7];
-//        S[12] = key[3];
-//        S[13] = key[2];
-//        S[14] = ~key[1];
-//        S[15] = key[0];
-//        r[0] = 0;
-//        r[1] = 0;
-//        return dstu8845(S, r, key, 64, iv);
-//}
 
 void dstu8845::print() const
 {
@@ -433,13 +281,15 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
 {
     uint64_t l_S[16];
     uint64_t l_r[2];
-    
-    for(uint8_t i = 0; i < 16; ++i)
-    {
-        l_S[i] = this->S[i];
-    }
-    l_r[0] = this->r[0];
-    l_r[1] = this->r[1];
+
+    __builtin_memcpy(l_S, this->S, 128);
+    __builtin_memcpy(l_r, this->r, 16);
+    //for(uint8_t i = 0; i < 16; ++i)
+    //{
+    //    l_S[i] = this->S[i];
+    //}
+    //l_r[0] = this->r[0];
+    //l_r[1] = this->r[1];
 
     const uint64_t * __restrict in64 = (const uint64_t*)__builtin_assume_aligned(in, 64);
     uint64_t * __restrict out64 = (uint64_t*)__builtin_assume_aligned(out, 64);
@@ -549,12 +399,14 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         out64 += 16;
     }
 
-    for(uint8_t i = 0; i < 16; ++i)
-    {
-        this->S[i] = l_S[i];
-    }
-    this->r[0] = l_r[0];
-    this->r[1] = l_r[1];
+    __builtin_memcpy(this->S, l_S, 128);
+    __builtin_memcpy(this->r, l_r, 16);
+    //for(uint8_t i = 0; i < 16; ++i)
+    //{
+    //    this->S[i] = l_S[i];
+    //}
+    //this->r[0] = l_r[0];
+    //this->r[1] = l_r[1];
 
     uint8_t tail = inl % 128;
     if(tail > 0)
