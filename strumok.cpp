@@ -214,7 +214,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         fsmtmp = l_r[1] + l_S[9];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[12] = l_S[13] ^ ((l_r[0] + l_S[12]) ^ l_r[1];
+        ks[12] = l_S[13] ^ (l_r[0] + l_S[12]) ^ l_r[1];
 
         l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]);
         fsmtmp = l_r[1] + l_S[10];
