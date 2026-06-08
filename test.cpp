@@ -14,11 +14,12 @@ int main()
     alignas(64) uint64_t iv[4] = {1, 2, 3, 4};
 
     uint32_t z_0 = 0;
+    dstu8845 cipher;
     clock_t begin = clock();
     for(uint64_t i = 0; i < 1000'000; i++)
     {
-        dstu8845 cipher = dstu8845::dstu8845_512_fast(key, iv);
-        z_0 = cipher.z_0;
+        cipher.dstu8845_512_fast(key, iv);
+        z_0 ^= cipher.z_0;
     }
     clock_t end = clock();
     cout << z_0 << "\n";
@@ -26,7 +27,7 @@ int main()
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     cout << "Init time: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
 
-    dstu8845 cipher = dstu8845::dstu8845_512_fast(key, iv);
+    cipher.dstu8845_512_fast(key, iv);
     cipher.print();
 
     alignas(64) const uint8_t in[4096] = {0};
