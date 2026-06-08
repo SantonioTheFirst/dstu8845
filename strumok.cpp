@@ -5,7 +5,7 @@
 using namespace std;
 
 
-inline __attribute__((always_inline)) void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
+void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
 {
     //dstu8845 ctx;
     
