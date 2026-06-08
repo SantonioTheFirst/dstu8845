@@ -190,7 +190,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         l_r[0] = fsmtmp;
         uint64_t ks7 = l_S[8] ^ (l_r[0] + l_S[7]) ^ l_r[1];
 
-        __m256i k_vec1 = _mm256_set_epi64x(k7, k6, k5, k4);
+        __m256i k_vec1 = _mm256_set_epi64x(ks7, ks6, ks5, ks4);
         __m256i in_vec1 = _mm256_loadu_si256((const __m256i*)(in64 + 4));
         _mm256_storeu_si256((__m256i*)(out64 + 4), _mm256_xor_si256(in_vec1, k_vec1));
 
@@ -218,7 +218,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         l_r[0] = fsmtmp;
         uint64_t ks11 = l_S[12] ^ (l_r[0] + l_S[11]) ^ l_r[1];
 
-        __m256i k_vec2 = _mm256_set_epi64x(k11, k10, k9, k8);
+        __m256i k_vec2 = _mm256_set_epi64x(ks11, ks10, ks9, ks8);
         __m256i in_vec2 = _mm256_loadu_si256((const __m256i*)(in64 + 8));
         _mm256_storeu_si256((__m256i*)(out64 + 8), _mm256_xor_si256(in_vec2, k_vec2));
 
@@ -246,7 +246,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         l_r[0] = fsmtmp;
         uint64_t ks15 = l_S[0] ^ (l_r[0] + l_S[15]) ^ l_r[1];
 
-        __m256i k_vec3 = _mm256_set_epi64x(k15, k14, k13, k12);
+        __m256i k_vec3 = _mm256_set_epi64x(ks15, ks14, ks13, ks12);
         __m256i in_vec3 = _mm256_loadu_si256((const __m256i*)(in64 + 12));
         _mm256_storeu_si256((__m256i*)(out64 + 12), _mm256_xor_si256(in_vec3, k_vec3));
 
