@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <immintrin.h>
 using namespace std;
 
 class dstu8845 {
@@ -11,10 +12,10 @@ class dstu8845 {
 
         //dstu8845(const uint64_t *S, const uint64_t *r, const uint64_t *key, const uint8_t key_size, const uint64_t *iv);
 
-        static inline __attribute__((always_inline)) constexpr uint8_t byte(uint8_t n, uint64_t w)
-        {
-          return (((w)>>(n*8))&0xff);
-        }
+        //static inline __attribute__((always_inline)) constexpr uint8_t byte(uint8_t n, uint64_t w)
+        //{
+        //  return (((w)>>(n*8))&0xff);
+        //}
 
         static inline __attribute__((always_inline)) constexpr uint64_t ainv_mul(uint64_t w)
         {
@@ -26,10 +27,22 @@ class dstu8845 {
           return (((w)<<8)^(strumok_alpha_mul[w>>56]));
         }
 
-        static inline __attribute__((always_inline)) constexpr uint64_t T(uint64_t w)
+        //static inline __attribute__((always_inline)) constexpr uint64_t T(uint64_t w)
+        //{
+        //  return ((T0[byte(0,(w))])^(T1[byte(1,(w))])^(T2[byte(2,(w))])^(T3[byte(3,(w))])^(T4[byte(4,(w))])^(T5[byte(5,(w))])^(T6[byte(6,(w))])^(T7[byte(7,(w))]));
+        //}
+
+        static inline __attribute__((always_inline)) uint64_t T(uint64_t w)
         {
-          return ((T0[byte(0,(w))])^(T1[byte(1,(w))])^(T2[byte(2,(w))])^(T3[byte(3,(w))])^(T4[byte(4,(w))])^(T5[byte(5,(w))])^(T6[byte(6,(w))])^(T7[byte(7,(w))]));
-        }
+            return (T0[_pext_u64(w, 0x00000000000000FFULL)] ^
+                    T1[_pext_u64(w, 0x000000000000FF00ULL)] ^
+                    T2[_pext_u64(w, 0x0000000000FF0000ULL)] ^
+                    T3[_pext_u64(w, 0x00000000FF000000ULL)] ^
+                    T4[_pext_u64(w, 0x000000FF00000000ULL)] ^
+                    T5[_pext_u64(w, 0x0000FF0000000000ULL)] ^
+                    T6[_pext_u64(w, 0x00FF000000000000ULL)] ^
+                    T7[_pext_u64(w, 0xFF00000000000000ULL)]);
+}
 
         alignas(64) static constexpr uint64_t strumok_alpha_mul[256] = {
             0x0000000000000000ULL, 0xD73F04125E000004ULL, 0xB37E0824BC000008ULL, 0x64410C36E200000CULL,
