@@ -127,7 +127,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
 
     const uint64_t * __restrict in64 = (const uint64_t*)__builtin_assume_aligned(in, 64);
     uint64_t * __restrict out64 = (uint64_t*)__builtin_assume_aligned(out, 64);
-    alignas(64) uint64_t ks[16]; 
+    alignas(32) uint64_t ks[16]; 
     
     uint64_t blocks = inl / 128;
 
@@ -234,13 +234,29 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         l_r[0] = fsmtmp;
         ks[15] = l_S[0] ^ (l_r[0] + l_S[15]) ^ l_r[1];
 
-        __m512i d0 = _mm512_load_si512((const __m512i*)(in64));
-        __m512i k0 = _mm512_load_si512((const __m512i*)(ks));
-        _mm512_store_si512((__m512i*)(out64), _mm512_xor_si512(d0, k0));
+        //__m512i d0 = _mm512_load_si512((const __m512i*)(in64));
+        //__m512i k0 = _mm512_load_si512((const __m512i*)(ks));
+        //_mm512_store_si512((__m512i*)(out64), _mm512_xor_si512(d0, k0));
 
-        __m512i d1 = _mm512_load_si512((const __m512i*)(in64 + 8));
-        __m512i k1 = _mm512_load_si512((const __m512i*)(ks + 8));
-        _mm512_store_si512((__m512i*)(out64 + 8), _mm512_xor_si512(d1, k1));
+        //__m512i d1 = _mm512_load_si512((const __m512i*)(in64 + 8));
+        //__m512i k1 = _mm512_load_si512((const __m512i*)(ks + 8));
+        //_mm512_store_si512((__m512i*)(out64 + 8), _mm512_xor_si512(d1, k1));
+
+        __m256i d0 = _mm256_loadu_si256((const __m256i*)(in64));
+        __m256i k0 = _mm256_load_si256((const __m256i*)(ks));
+        _mm256_storeu_si256((__m256i*)(out64), _mm256_xor_si256(d0, k0));
+
+        __m256i d1 = _mm256_loadu_si256((const __m256i*)(in64 + 4));
+        __m256i k1 = _mm256_load_si256((const __m256i*)(ks + 4));
+        _mm256_storeu_si256((__m256i*)(out64 + 4), _mm256_xor_si256(d1, k1));
+
+        __m256i d2 = _mm256_loadu_si256((const __m256i*)(in64 + 8));
+        __m256i k2 = _mm256_load_si256((const __m256i*)(ks + 8));
+        _mm256_storeu_si256((__m256i*)(out64 + 8), _mm256_xor_si256(d2, k2));
+
+        __m256i d3 = _mm256_loadu_si256((const __m256i*)(in64 + 12));
+        __m256i k3 = _mm256_load_si256((const __m256i*)(ks + 12));
+        _mm256_storeu_si256((__m256i*)(out64 + 12), _mm256_xor_si256(d3, k3));
 
         in64 += 16;
         out64 += 16;
