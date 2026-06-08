@@ -127,7 +127,7 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
 
     const uint64_t * __restrict in64 = (const uint64_t*)__builtin_assume_aligned(in, 64);
     uint64_t * __restrict out64 = (uint64_t*)__builtin_assume_aligned(out, 64);
-    alignas(32) uint64_t ks[16]; 
+    //alignas(32) uint64_t ks[16]; 
     
     uint64_t blocks = inl / 128;
 
@@ -142,97 +142,113 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         fsmtmp = l_r[1] + l_S[13];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[0] = l_S[1] ^ (l_r[0] + l_S[0]) ^ l_r[1];
+        uint64_t ks0 = l_S[1] ^ (l_r[0] + l_S[0]) ^ l_r[1];
 
         l_S[1] = a_mul(l_S[1]) ^ l_S[14] ^ ainv_mul(l_S[12]);
         fsmtmp = l_r[1] + l_S[14];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[1] = l_S[2] ^ (l_r[0] + l_S[1]) ^ l_r[1];
+        uint64_t ks1 = l_S[2] ^ (l_r[0] + l_S[1]) ^ l_r[1];
 
         l_S[2] = a_mul(l_S[2]) ^ l_S[15] ^ ainv_mul(l_S[13]);
         fsmtmp = l_r[1] + l_S[15];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[2] = l_S[3] ^ (l_r[0] + l_S[2]) ^ l_r[1];
+        uint64_t ks2 = l_S[3] ^ (l_r[0] + l_S[2]) ^ l_r[1];
 
         l_S[3] = a_mul(l_S[3]) ^ l_S[0] ^ ainv_mul(l_S[14]);
         fsmtmp = l_r[1] + l_S[0];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[3] = l_S[4] ^ (l_r[0] + l_S[3]) ^ l_r[1];
+        uint64_t ks3 = l_S[4] ^ (l_r[0] + l_S[3]) ^ l_r[1];
+
+        __m256i k_vec0 = _mm256_set_epi64x(ks3, ks2, ks1, ks0);
+        __m256i in_vec0 = _mm256_loadu_si256((const __m256i*)(in64));
+        _mm256_storeu_si256((__m256i*)(out64), _mm256_xor_si256(in_vec0, k_vec0));
 
         l_S[4] = a_mul(l_S[4]) ^ l_S[1] ^ ainv_mul(l_S[15]);
         fsmtmp = l_r[1] + l_S[1];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[4] = l_S[5] ^ (l_r[0] + l_S[4]) ^ l_r[1];
+        uint64_t ks4 = l_S[5] ^ (l_r[0] + l_S[4]) ^ l_r[1];
 
         l_S[5] = a_mul(l_S[5]) ^ l_S[2] ^ ainv_mul(l_S[0]);
         fsmtmp = l_r[1] + l_S[2];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[5] = l_S[6] ^ (l_r[0] + l_S[5]) ^ l_r[1];
+        uint64_t ks5 = l_S[6] ^ (l_r[0] + l_S[5]) ^ l_r[1];
 
         l_S[6] = a_mul(l_S[6]) ^ l_S[3] ^ ainv_mul(l_S[1]);
         fsmtmp = l_r[1] + l_S[3];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[6] = l_S[7] ^ (l_r[0] + l_S[6]) ^ l_r[1];
+        uint64_t ks6 = l_S[7] ^ (l_r[0] + l_S[6]) ^ l_r[1];
 
         l_S[7] = a_mul(l_S[7]) ^ l_S[4] ^ ainv_mul(l_S[2]);
         fsmtmp = l_r[1] + l_S[4];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[7] = l_S[8] ^ (l_r[0] + l_S[7]) ^ l_r[1];
+        uint64_t ks7 = l_S[8] ^ (l_r[0] + l_S[7]) ^ l_r[1];
+
+        __m256i k_vec1 = _mm256_set_epi64x(k7, k6, k5, k4);
+        __m256i in_vec1 = _mm256_loadu_si256((const __m256i*)(in64 + 4));
+        _mm256_storeu_si256((__m256i*)(out64 + 4), _mm256_xor_si256(in_vec1, k_vec1));
 
         l_S[8] = a_mul(l_S[8]) ^ l_S[5] ^ ainv_mul(l_S[3]);
         fsmtmp = l_r[1] + l_S[5];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[8] = l_S[9] ^ (l_r[0] + l_S[8]) ^ l_r[1];
+        uint64_t ks8 = l_S[9] ^ (l_r[0] + l_S[8]) ^ l_r[1];
 
         l_S[9] = a_mul(l_S[9]) ^ l_S[6] ^ ainv_mul(l_S[4]);
         fsmtmp = l_r[1] + l_S[6];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[9] = l_S[10] ^ (l_r[0] + l_S[9]) ^ l_r[1];
+        uint64_t ks9 = l_S[10] ^ (l_r[0] + l_S[9]) ^ l_r[1];
 
         l_S[10] = a_mul(l_S[10]) ^ l_S[7] ^ ainv_mul(l_S[5]);
         fsmtmp = l_r[1] + l_S[7];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[10] = l_S[11] ^ (l_r[0] + l_S[10]) ^ l_r[1];
+        uint64_t ks10 = l_S[11] ^ (l_r[0] + l_S[10]) ^ l_r[1];
 
         l_S[11] = a_mul(l_S[11]) ^ l_S[8] ^ ainv_mul(l_S[6]);
         fsmtmp = l_r[1] + l_S[8];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[11] = l_S[12] ^ (l_r[0] + l_S[11]) ^ l_r[1];
+        uint64_t ks11 = l_S[12] ^ (l_r[0] + l_S[11]) ^ l_r[1];
+
+        __m256i k_vec2 = _mm256_set_epi64x(k11, k10, k9, k8);
+        __m256i in_vec2 = _mm256_loadu_si256((const __m256i*)(in64 + 8));
+        _mm256_storeu_si256((__m256i*)(out64 + 8), _mm256_xor_si256(in_vec2, k_vec2));
 
         l_S[12] = a_mul(l_S[12]) ^ l_S[9] ^ ainv_mul(l_S[7]);
         fsmtmp = l_r[1] + l_S[9];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[12] = l_S[13] ^ (l_r[0] + l_S[12]) ^ l_r[1];
+        uint64_t ks12 = l_S[13] ^ (l_r[0] + l_S[12]) ^ l_r[1];
 
         l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]);
         fsmtmp = l_r[1] + l_S[10];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[13] = l_S[14] ^ (l_r[0] + l_S[13]) ^ l_r[1];
+        uint64_t ks13 = l_S[14] ^ (l_r[0] + l_S[13]) ^ l_r[1];
 
         l_S[14] = a_mul(l_S[14]) ^ l_S[11] ^ ainv_mul(l_S[9]);
         fsmtmp = l_r[1] + l_S[11];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[14] = l_S[15] ^ (l_r[0] + l_S[14]) ^ l_r[1];
+        uint64_t ks14 = l_S[15] ^ (l_r[0] + l_S[14]) ^ l_r[1];
 
         l_S[15] = a_mul(l_S[15]) ^ l_S[12] ^ ainv_mul(l_S[10]);
         fsmtmp = l_r[1] + l_S[12];
         l_r[1] = T(l_r[0]);
         l_r[0] = fsmtmp;
-        ks[15] = l_S[0] ^ (l_r[0] + l_S[15]) ^ l_r[1];
+        uint64_t ks15 = l_S[0] ^ (l_r[0] + l_S[15]) ^ l_r[1];
+
+        __m256i k_vec3 = _mm256_set_epi64x(k15, k14, k13, k12);
+        __m256i in_vec3 = _mm256_loadu_si256((const __m256i*)(in64 + 12));
+        _mm256_storeu_si256((__m256i*)(out64 + 12), _mm256_xor_si256(in_vec3, k_vec3));
 
         //__m512i d0 = _mm512_load_si512((const __m512i*)(in64));
         //__m512i k0 = _mm512_load_si512((const __m512i*)(ks));
@@ -242,21 +258,21 @@ void dstu8845::dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restric
         //__m512i k1 = _mm512_load_si512((const __m512i*)(ks + 8));
         //_mm512_store_si512((__m512i*)(out64 + 8), _mm512_xor_si512(d1, k1));
 
-        __m256i d0 = _mm256_loadu_si256((const __m256i*)(in64));
-        __m256i k0 = _mm256_load_si256((const __m256i*)(ks));
-        _mm256_storeu_si256((__m256i*)(out64), _mm256_xor_si256(d0, k0));
+        //__m256i d0 = _mm256_loadu_si256((const __m256i*)(in64));
+        //__m256i k0 = _mm256_load_si256((const __m256i*)(ks));
+        //_mm256_storeu_si256((__m256i*)(out64), _mm256_xor_si256(d0, k0));
 
-        __m256i d1 = _mm256_loadu_si256((const __m256i*)(in64 + 4));
-        __m256i k1 = _mm256_load_si256((const __m256i*)(ks + 4));
-        _mm256_storeu_si256((__m256i*)(out64 + 4), _mm256_xor_si256(d1, k1));
+        //__m256i d1 = _mm256_loadu_si256((const __m256i*)(in64 + 4));
+        //__m256i k1 = _mm256_load_si256((const __m256i*)(ks + 4));
+        //_mm256_storeu_si256((__m256i*)(out64 + 4), _mm256_xor_si256(d1, k1));
 
-        __m256i d2 = _mm256_loadu_si256((const __m256i*)(in64 + 8));
-        __m256i k2 = _mm256_load_si256((const __m256i*)(ks + 8));
-        _mm256_storeu_si256((__m256i*)(out64 + 8), _mm256_xor_si256(d2, k2));
+        //__m256i d2 = _mm256_loadu_si256((const __m256i*)(in64 + 8));
+        //__m256i k2 = _mm256_load_si256((const __m256i*)(ks + 8));
+        //_mm256_storeu_si256((__m256i*)(out64 + 8), _mm256_xor_si256(d2, k2));
 
-        __m256i d3 = _mm256_loadu_si256((const __m256i*)(in64 + 12));
-        __m256i k3 = _mm256_load_si256((const __m256i*)(ks + 12));
-        _mm256_storeu_si256((__m256i*)(out64 + 12), _mm256_xor_si256(d3, k3));
+        //__m256i d3 = _mm256_loadu_si256((const __m256i*)(in64 + 12));
+        //__m256i k3 = _mm256_load_si256((const __m256i*)(ks + 12));
+        //_mm256_storeu_si256((__m256i*)(out64 + 12), _mm256_xor_si256(d3, k3));
 
         in64 += 16;
         out64 += 16;
