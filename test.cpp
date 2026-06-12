@@ -28,7 +28,7 @@ int main()
     }
 
     clock_t begin = clock();
-    for(uint64_t i = 0; i < 10'000'000; i++)
+    for(uint64_t i = 0; i < 1000'000; i++)
     {
         cipher.dstu8845_256_fast(key_256, iv);
         z_0 ^= cipher.z_0;
@@ -37,10 +37,10 @@ int main()
     cout << z_0 << "\n";
     
     double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    cout << "Init time 256 bit: " << time_spent << "\n" << "Init per second: " << 10'000'000 / time_spent << "\n";
+    cout << "Init time 256 bit: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
    
     begin = clock();
-    for(uint64_t i = 0; i < 10'000'000; i++)
+    for(uint64_t i = 0; i < 1000'000; i++)
     {
         cipher.dstu8845_512_fast(key_512, iv);
         z_0 ^= cipher.z_0;
@@ -49,7 +49,7 @@ int main()
     cout << z_0 << "\n";
     
     time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
-    cout << "Init time 512 bit: " << time_spent << "\n" << "Init per second: " << 10'000'000 / time_spent << "\n";
+    cout << "Init time 512 bit: " << time_spent << "\n" << "Init per second: " << 1000'000 / time_spent << "\n";
 
     cipher.dstu8845_512_fast(key_512, iv);
     cipher.print();
