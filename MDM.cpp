@@ -156,7 +156,7 @@ void slightly_greedy(const int* k_vec, const int* n_vec, const float* alpha_vec,
             int local_count = 0; // Количество реально найденных
             
             find_best(S_current[i], k_vec[step], n_vec[step], local_top, local_count); // Запрашиваем расширения
-            
+            cout << "Local count: " << local_count << "\n";
             for (int j = 0; j < local_count; ++j) { // Перебираем результаты
                 if (next_count < NEXT_GEN_BUFFER) { // Если глобальный буфер следующего поколения не переполнен
                     S_next[next_count++] = local_top[j]; // Копируем кандидата
