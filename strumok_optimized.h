@@ -1,3 +1,4 @@
+#pragma once
 #include <cstdint>
 using namespace std;
 
@@ -7,22 +8,35 @@ class dstu8845 {
         alignas(64) uint64_t  r[2];
         alignas(64) uint64_t  key[8];
         alignas(64) uint64_t  iv[4];
-        uint8_t   key_size; // Key size in bytes
 
-        uint8_t inline byte(uint8_t n, uint64_t w){
-          return (((w)>>(n*8)) & 0xff);
+        static inline __attribute__((always_inline)) constexpr uint8_t byte(uint8_t n, uint64_t w)
+        {
+          return (((w)>>(n*8))&0xff);
         }
 
-        uint64_t inline ainv_mul(uint64_t w){
-          return (((w)>>8)^(this->strumok_alphainv_mul[w&0xff]));
+        static inline __attribute__((always_inline)) constexpr uint64_t ainv_mul(uint64_t w)
+        {
+          return (((w)>>8)^(strumok_alphainv_mul[w&0xff]));
         }
-        uint64_t inline a_mul(uint64_t w){
-          return (((w)<<8)^(this->strumok_alpha_mul[w>>56]));
+
+        static inline __attribute__((always_inline)) constexpr uint64_t a_mul(uint64_t w)
+        {
+          return (((w)<<8)^(strumok_alpha_mul[w>>56]));
         }
-        uint64_t inline T(uint64_t w){
-          return ((this->T0[this->byte(0,(w))])^(this->T1[this->byte(1,(w))])^(this->T2[this->byte(2,(w))])^(this->T3[this->byte(3,(w))])^(this->T4[this->byte(4,(w))])^(this->T5[this->byte(5,(w))])^(this->T6[this->byte(6,(w))])^(this->T7[this->byte(7,(w))]));
+
+        static inline __attribute__((always_inline)) constexpr uint64_t T(uint64_t w)
+        {
+          return (T_flat[0][byte(0, w)] ^ 
+                  T_flat[1][byte(1, w)] ^ 
+                  T_flat[2][byte(2, w)] ^ 
+                  T_flat[3][byte(3, w)] ^ 
+                  T_flat[4][byte(4, w)] ^ 
+                  T_flat[5][byte(5, w)] ^ 
+                  T_flat[6][byte(6, w)] ^ 
+                  T_flat[7][byte(7, w)]);
         }
-        alignas(64) const uint64_t strumok_alpha_mul[256] = {
+
+        alignas(64) static constexpr uint64_t strumok_alpha_mul[256] = {
             0x0000000000000000ULL, 0xD73F04125E000004ULL, 0xB37E0824BC000008ULL, 0x64410C36E200000CULL,
             0x7BFC104865000010ULL, 0xACC3145A3B000014ULL, 0xC882186CD9000018ULL, 0x1FBD1C7E8700001CULL,
             0xF6E52090CA000020ULL, 0x21DA248294000024ULL, 0x459B28B476000028ULL, 0x92A42CA62800002CULL,
@@ -89,7 +103,7 @@ class dstu8845 {
             0xBBF0D79E0B0000D7ULL, 0x6CCFD38C550000D3ULL, 0x088EDFBAB70000DFULL, 0xDFB1DBA8E90000DBULL
         };
 
-        alignas(64) const uint64_t strumok_alphainv_mul[256] = {
+        alignas(64) static constexpr uint64_t strumok_alphainv_mul[256] = {
             0x0000000000000000ULL, 0x47FCC6018A990000ULL, 0x8EE59102092F0000ULL, 0xC919570383B60000ULL,
             0x01D73F04125E0000ULL, 0x462BF90598C70000ULL, 0x8F32AE061B710000ULL, 0xC8CE680791E80000ULL,
             0x02B37E0824BC0000ULL, 0x454FB809AE250000ULL, 0x8C56EF0A2D930000ULL, 0xCBAA290BA70A0000ULL,
@@ -156,7 +170,8 @@ class dstu8845 {
             0x3FE73CFCA9CB0000ULL, 0x781BFAFD23520000ULL, 0xB102ADFEA0E40000ULL, 0xF6FE6BFF2A7D0000ULL
         };
 
-        alignas(64) const uint64_t T0[256] = {
+        alignas(64) static constexpr uint64_t T_flat[8][256] = {
+        {
             0xA832A829D77F9AA8ULL, 0x4352432297D41143ULL, 0x5F3E5FC2DF80615FULL, 0x061E063014121806ULL,
             0x6BDA6B7F670CB16BULL, 0x75BC758F2356C975ULL, 0x6CC16C477519AD6CULL, 0x592059F2CB927959ULL,
             0x71A871AF3B4AD971ULL, 0xDF84DFB6F8275BDFULL, 0x87A1874C35B22687ULL, 0x95FB95DC59CC6E95ULL,
@@ -221,9 +236,9 @@ class dstu8845 {
             0x4E6B4E4AB9F7254EULL, 0x4449441A85C10D44ULL, 0xA701A751F552A6A7ULL, 0x2A822A4DFCD6A82AULL,
             0x85AB855C39BC2E85ULL, 0x25B12535DEFB9425ULL, 0xE659E6636E88BFE6ULL, 0xCAC5CA1E864C0FCAULL,
             0x7C917CC71569ED7CULL, 0x8B9D8B2C1D96168BULL, 0x5613568AE9BF4556ULL, 0x80BA807427A73A80ULL
-        };
+        },
 
-        alignas(64) const uint64_t T1[256] = {
+        {
             0xD1CE3E9E501FCECEULL, 0x6DBBB1BD06D6BBBBULL, 0x60EB0B40AB8BEBEBULL, 0xE092E44BD9729292ULL,
             0x65EA0346AC8FEAEAULL, 0xC0CB16804B0BCBCBULL, 0x5F13986A794C1313ULL, 0xE2C146BC7D23C1C1ULL,
             0x6AE91B4CA583E9E9ULL, 0xD23ACD9CA6E83A3AULL, 0xA9D6FECE187FD6D6ULL, 0x40B2F98B39F2B2B2ULL,
@@ -288,9 +303,9 @@ class dstu8845 {
             0x2F5AEAC19B755A5AULL, 0x7EED3B54B993EDEDULL, 0x01A751F552A6A7A7ULL, 0xE36617492F856666ULL,
             0xA52115C6E7842121ULL, 0x9E7FDF1F60E17F7FULL, 0x988A241B91128A8AULL, 0xBB2725D2F59C2727ULL,
             0xFCC776A86F3BC7C7ULL, 0xE7C04EBA7A27C0C0ULL, 0x8D2955F6DFA42929ULL, 0xACD7F6C81F7BD7D7ULL
-        };
+        },
 
-        alignas(64) const uint64_t T2[256] = {
+        {
             0x93EC4DDE769393E5ULL, 0xD986EC3543D9D99AULL, 0x9AA47BE1529A9AC8ULL, 0xB5C1992CEEB5B55BULL,
             0x98B477EF5A9898C2ULL, 0x220DCCEE882222AAULL, 0x451283C60945454CULL, 0xFCB332CED7FCFC2BULL,
             0xBAB9BB01D2BABA68ULL, 0x6A77610BB56A6ADFULL, 0xDFB6F8275BDFDF84ULL, 0x02100C0E0802020AULL,
@@ -355,9 +370,9 @@ class dstu8845 {
             0x39D596AFE43939DDULL, 0x864433B5228686A4ULL, 0x549AE5B14D545419ULL, 0xAA39DB7192AAAA38ULL,
             0x8C140F830A8C8C86ULL, 0x34BDB88CD03434E4ULL, 0x2115C6E7842121A5ULL, 0x8B2C1D96168B8B9DULL,
             0xF8932AD2C7F8F83FULL, 0x0C602824300C0C3CULL, 0x74872551CD7474B9ULL, 0x671F4F28816767E6ULL
-        };
+        },
 
-        alignas(64) const uint64_t T3[256] = {
+        {
             0x676D05BD6868D568ULL, 0x1C09840E8D8D838DULL, 0x1E864C0FCACAC5CAULL, 0x52B3FE294D4D644DULL,
             0xBF3744D17373A273ULL, 0x62A7EC314B4B7A4BULL, 0x4AB9F7254E4E6B4EULL, 0x4DFCD6A82A2A822AULL,
             0xEEC21677D4D4A3D4ULL, 0xAAF1A35552520752ULL, 0x2DD4F2982626BE26ULL, 0xF18D3EF6B3B345B3ULL,
@@ -422,9 +437,9 @@ class dstu8845 {
             0xF2CB927959592059ULL, 0x21D1789EA9A937A9ULL, 0x5AB5F92D4C4C614CULL, 0xB872655C17174B17ULL,
             0xDF1F60E17F7F9E7FULL, 0xFC41D07E9191EF91ULL, 0xA9B70FDAB8B862B8ULL, 0x068C4503C9C9CAC9ULL,
             0x82EFB84157571657ULL, 0xD85A416C1B1B771BULL, 0x537A9AA7E0E047E0ULL, 0x2F5B3A996161F861ULL
-        };
+        },
 
-        alignas(64) const uint64_t T4[256] = {
+        {
             0xD77F9AA8A832A829ULL, 0x97D4114343524322ULL, 0xDF80615F5F3E5FC2ULL, 0x14121806061E0630ULL,
             0x670CB16B6BDA6B7FULL, 0x2356C97575BC758FULL, 0x7519AD6C6CC16C47ULL, 0xCB927959592059F2ULL,
             0x3B4AD97171A871AFULL, 0xF8275BDFDF84DFB6ULL, 0x35B2268787A1874CULL, 0x59CC6E9595FB95DCULL,
@@ -489,9 +504,9 @@ class dstu8845 {
             0xB9F7254E4E6B4E4AULL, 0x85C10D444449441AULL, 0xF552A6A7A701A751ULL, 0xFCD6A82A2A822A4DULL,
             0x39BC2E8585AB855CULL, 0xDEFB942525B12535ULL, 0x6E88BFE6E659E663ULL, 0x864C0FCACAC5CA1EULL,
             0x1569ED7C7C917CC7ULL, 0x1D96168B8B9D8B2CULL, 0xE9BF45565613568AULL, 0x27A73A8080BA8074ULL
-        };
+        },
 
-        alignas(64) const uint64_t T5[256] = {
+        {
             0x501FCECED1CE3E9EULL, 0x06D6BBBB6DBBB1BDULL, 0xAB8BEBEB60EB0B40ULL, 0xD9729292E092E44BULL,
             0xAC8FEAEA65EA0346ULL, 0x4B0BCBCBC0CB1680ULL, 0x794C13135F13986AULL, 0x7D23C1C1E2C146BCULL,
             0xA583E9E96AE91B4CULL, 0xA6E83A3AD23ACD9CULL, 0x187FD6D6A9D6FECEULL, 0x39F2B2B240B2F98BULL,
@@ -556,9 +571,9 @@ class dstu8845 {
             0x9B755A5A2F5AEAC1ULL, 0xB993EDED7EED3B54ULL, 0x52A6A7A701A751F5ULL, 0x2F856666E3661749ULL,
             0xE7842121A52115C6ULL, 0x60E17F7F9E7FDF1FULL, 0x91128A8A988A241BULL, 0xF59C2727BB2725D2ULL,
             0x6F3BC7C7FCC776A8ULL, 0x7A27C0C0E7C04EBAULL, 0xDFA429298D2955F6ULL, 0x1F7BD7D7ACD7F6C8ULL
-        };
+        },
 
-        alignas(64) const uint64_t T6[256] = {
+        {
             0x769393E593EC4DDEULL, 0x43D9D99AD986EC35ULL, 0x529A9AC89AA47BE1ULL, 0xEEB5B55BB5C1992CULL,
             0x5A9898C298B477EFULL, 0x882222AA220DCCEEULL, 0x0945454C451283C6ULL, 0xD7FCFC2BFCB332CEULL,
             0xD2BABA68BAB9BB01ULL, 0xB56A6ADF6A77610BULL, 0x5BDFDF84DFB6F827ULL, 0x0802020A02100C0EULL,
@@ -623,9 +638,9 @@ class dstu8845 {
             0xE43939DD39D596AFULL, 0x228686A4864433B5ULL, 0x4D545419549AE5B1ULL, 0x92AAAA38AA39DB71ULL,
             0x0A8C8C868C140F83ULL, 0xD03434E434BDB88CULL, 0x842121A52115C6E7ULL, 0x168B8B9D8B2C1D96ULL,
             0xC7F8F83FF8932AD2ULL, 0x300C0C3C0C602824ULL, 0xCD7474B974872551ULL, 0x816767E6671F4F28ULL
-        };
+        },
 
-        alignas(64) const uint64_t T7[256] = {
+        {
             0x6868D568676D05BDULL, 0x8D8D838D1C09840EULL, 0xCACAC5CA1E864C0FULL, 0x4D4D644D52B3FE29ULL,
             0x7373A273BF3744D1ULL, 0x4B4B7A4B62A7EC31ULL, 0x4E4E6B4E4AB9F725ULL, 0x2A2A822A4DFCD6A8ULL,
             0xD4D4A3D4EEC21677ULL, 0x52520752AAF1A355ULL, 0x2626BE262DD4F298ULL, 0xB3B345B3F18D3EF6ULL,
@@ -690,20 +705,316 @@ class dstu8845 {
             0x59592059F2CB9279ULL, 0xA9A937A921D1789EULL, 0x4C4C614C5AB5F92DULL, 0x17174B17B872655CULL,
             0x7F7F9E7FDF1F60E1ULL, 0x9191EF91FC41D07EULL, 0xB8B862B8A9B70FDAULL, 0xC9C9CAC9068C4503ULL,
             0x5757165782EFB841ULL, 0x1B1B771BD85A416CULL, 0xE0E047E0537A9AA7ULL, 0x6161F8612F5B3A99ULL
+        }
         };
 
 public:
-    dstu8845(uint64_t *key, uint8_t key_size, uint64_t *iv, bool verbose, bool big_endian);
-    dstu8845_512_verbose(const uint64_t *key, const uint64_t *iv);
-    dstu8845_256_verbose(const uint64_t *key, const uint64_t *iv);
-    dstu8845_512(const uint64_t *key, const uint64_t *iv);
-    dstu8845_256(const uint64_t *key, const uint64_t *iv);
-
-    void dstu8845_crypt(const uint8_t *in, size_t inl, uint8_t *out);
-    uint64_t inline next_stream();
-    // void inline next_stream_full_crypt(uint64_t *in, uint64_t *out_stream);
-    // void inline next_stream_test();
-
+    inline dstu8845() {}
+    inline void dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv);
+    inline void dstu8845_256_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv);
+    void dstu8845_crypt(const uint8_t * __restrict in, uint8_t * __restrict out, const uint64_t inl);
+    void next_stream(uint64_t *out);
+    void print() const;
     uint32_t z_0;
-    bool inline get_first_keystream_bit();
 };
+
+void dstu8845::dstu8845_512_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
+{
+    alignas(64) uint64_t l_S[16];
+    uint64_t l_r[2] = {0, 0};
+    uint32_t l_z0 = 0;
+
+    l_S[0]  = key[7] ^ iv[0];
+    l_S[1]  = key[6];
+    l_S[2]  = key[5];
+    l_S[3]  = key[4] ^ iv[1];
+    l_S[4]  = key[3];
+    l_S[5]  = key[2] ^ iv[2];
+    l_S[6]  = key[1];
+    l_S[7]  = ~key[0];
+    l_S[8]  = key[4] ^ iv[3];
+    l_S[9]  = ~key[6];
+    l_S[10] = key[5];
+    l_S[11] = ~key[7];
+    l_S[12] = key[3];
+    l_S[13] = key[2];
+    l_S[14] = ~key[1];
+    l_S[15] = key[0];
+
+    uint64_t outfrom_fsm, fsmtmp;
+    
+    #pragma GCC unroll 2
+    for(uint8_t i = 0; i < 2; i++)
+    {
+        uint8_t shift = i * 16;
+        
+        outfrom_fsm = (l_r[0] + l_S[15]) ^ l_r[1];
+        l_S[0] = a_mul(l_S[0]) ^ l_S[13] ^ ainv_mul(l_S[11]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[13];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[1] ^ l_r[1] ^ (l_r[0] + l_S[0])) & 1) << shift;
+
+        outfrom_fsm = (l_r[0] + l_S[0]) ^ l_r[1];
+        l_S[1] = a_mul(l_S[1]) ^ l_S[14] ^ ainv_mul(l_S[12]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[14];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[2] ^ l_r[1] ^ (l_r[0] + l_S[1])) & 1) << (1 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[1]) ^ l_r[1];
+        l_S[2] = a_mul(l_S[2]) ^ l_S[15] ^ ainv_mul(l_S[13]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[15];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[3] ^ l_r[1] ^ (l_r[0] + l_S[2])) & 1) << (2 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[2]) ^ l_r[1];
+        l_S[3] = a_mul(l_S[3]) ^ l_S[0] ^ ainv_mul(l_S[14]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[0];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[4] ^ l_r[1] ^ (l_r[0] + l_S[3])) & 1) << (3 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[3]) ^ l_r[1];
+        l_S[4] = a_mul(l_S[4]) ^ l_S[1] ^ ainv_mul(l_S[15]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[1];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[5] ^ l_r[1] ^ (l_r[0] + l_S[4])) & 1) << (4 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[4]) ^ l_r[1];
+        l_S[5] = a_mul(l_S[5]) ^ l_S[2] ^ ainv_mul(l_S[0]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[2];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[6] ^ l_r[1] ^ (l_r[0] + l_S[5])) & 1) << (5 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[5]) ^ l_r[1];
+        l_S[6] = a_mul(l_S[6]) ^ l_S[3] ^ ainv_mul(l_S[1]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[3];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[7] ^ l_r[1] ^ (l_r[0] + l_S[6])) & 1) << (6 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[6]) ^ l_r[1];
+        l_S[7] = a_mul(l_S[7]) ^ l_S[4] ^ ainv_mul(l_S[2]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[4];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[8] ^ l_r[1] ^ (l_r[0] + l_S[7])) & 1) << (7 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[7]) ^ l_r[1];
+        l_S[8] = a_mul(l_S[8]) ^ l_S[5] ^ ainv_mul(l_S[3]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[5];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[9] ^ l_r[1] ^ (l_r[0] + l_S[8])) & 1) << (8 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[8]) ^ l_r[1];
+        l_S[9] = a_mul(l_S[9]) ^ l_S[6] ^ ainv_mul(l_S[4]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[6];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[10] ^ l_r[1] ^ (l_r[0] + l_S[9])) & 1) << (9 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[9]) ^ l_r[1];
+        l_S[10] = a_mul(l_S[10]) ^ l_S[7] ^ ainv_mul(l_S[5]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[7];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[11] ^ l_r[1] ^ (l_r[0] + l_S[10])) & 1) << (10 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[10]) ^ l_r[1];
+        l_S[11] = a_mul(l_S[11]) ^ l_S[8] ^ ainv_mul(l_S[6]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[8];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[12] ^ l_r[1] ^ (l_r[0] + l_S[11])) & 1) << (11 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[11]) ^ l_r[1];
+        l_S[12] = a_mul(l_S[12]) ^ l_S[9] ^ ainv_mul(l_S[7]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[9];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[13] ^ l_r[1] ^ (l_r[0] + l_S[12])) & 1) << (12 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[12]) ^ l_r[1];
+        l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[10];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[14] ^ l_r[1] ^ (l_r[0] + l_S[13])) & 1) << (13 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[13]) ^ l_r[1];
+        l_S[14] = a_mul(l_S[14]) ^ l_S[11] ^ ainv_mul(l_S[9]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[11];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[15] ^ l_r[1] ^ (l_r[0] + l_S[14])) & 1) << (14 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[14]) ^ l_r[1];
+        l_S[15] = a_mul(l_S[15]) ^ l_S[12] ^ ainv_mul(l_S[10]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[12];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[0] ^ l_r[1] ^ (l_r[0] + l_S[15])) & 1) << (15 + shift);
+    }
+
+    __builtin_memcpy(this->key, key, 64);
+    __builtin_memcpy(this->iv, iv, 32);
+    __builtin_memcpy(this->S, l_S, 128);
+    __builtin_memcpy(this->r, l_r, 16);
+    this->z_0 = l_z0;
+}
+
+void dstu8845::dstu8845_256_fast(const uint64_t * __restrict key, const uint64_t * __restrict iv)
+{
+
+    alignas(64) uint64_t l_S[16];
+    uint64_t l_r[2] = {0, 0};
+    uint32_t l_z0 = 0;
+
+    l_S[0] = key[3] ^ iv[0];
+    l_S[1] = key[2];
+    l_S[2] = key[1] ^ iv[1];
+    l_S[3] = key[0] ^ iv[2];
+    l_S[4] = key[3];
+    l_S[5] = key[2] ^ iv[3];
+    l_S[6] = ~key[1];
+    l_S[7] = ~key[0];
+    l_S[8] = key[3];
+    l_S[9] = key[2];
+    l_S[10] = ~key[1];
+    l_S[11] = key[0];
+    l_S[12] = key[3];
+    l_S[13] = ~key[2];
+    l_S[14] = key[1];
+    l_S[15] = ~key[0];
+
+    uint64_t outfrom_fsm, fsmtmp;
+    
+    #pragma GCC unroll 2
+    for(uint8_t i = 0; i < 2; i++)
+    {
+        uint8_t shift = i * 16;
+        
+        outfrom_fsm = (l_r[0] + l_S[15]) ^ l_r[1];
+        l_S[0] = a_mul(l_S[0]) ^ l_S[13] ^ ainv_mul(l_S[11]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[13];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[1] ^ l_r[1] ^ (l_r[0] + l_S[0])) & 1) << shift;
+
+        outfrom_fsm = (l_r[0] + l_S[0]) ^ l_r[1];
+        l_S[1] = a_mul(l_S[1]) ^ l_S[14] ^ ainv_mul(l_S[12]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[14];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[2] ^ l_r[1] ^ (l_r[0] + l_S[1])) & 1) << (1 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[1]) ^ l_r[1];
+        l_S[2] = a_mul(l_S[2]) ^ l_S[15] ^ ainv_mul(l_S[13]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[15];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[3] ^ l_r[1] ^ (l_r[0] + l_S[2])) & 1) << (2 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[2]) ^ l_r[1];
+        l_S[3] = a_mul(l_S[3]) ^ l_S[0] ^ ainv_mul(l_S[14]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[0];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[4] ^ l_r[1] ^ (l_r[0] + l_S[3])) & 1) << (3 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[3]) ^ l_r[1];
+        l_S[4] = a_mul(l_S[4]) ^ l_S[1] ^ ainv_mul(l_S[15]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[1];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[5] ^ l_r[1] ^ (l_r[0] + l_S[4])) & 1) << (4 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[4]) ^ l_r[1];
+        l_S[5] = a_mul(l_S[5]) ^ l_S[2] ^ ainv_mul(l_S[0]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[2];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[6] ^ l_r[1] ^ (l_r[0] + l_S[5])) & 1) << (5 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[5]) ^ l_r[1];
+        l_S[6] = a_mul(l_S[6]) ^ l_S[3] ^ ainv_mul(l_S[1]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[3];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[7] ^ l_r[1] ^ (l_r[0] + l_S[6])) & 1) << (6 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[6]) ^ l_r[1];
+        l_S[7] = a_mul(l_S[7]) ^ l_S[4] ^ ainv_mul(l_S[2]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[4];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[8] ^ l_r[1] ^ (l_r[0] + l_S[7])) & 1) << (7 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[7]) ^ l_r[1];
+        l_S[8] = a_mul(l_S[8]) ^ l_S[5] ^ ainv_mul(l_S[3]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[5];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[9] ^ l_r[1] ^ (l_r[0] + l_S[8])) & 1) << (8 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[8]) ^ l_r[1];
+        l_S[9] = a_mul(l_S[9]) ^ l_S[6] ^ ainv_mul(l_S[4]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[6];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[10] ^ l_r[1] ^ (l_r[0] + l_S[9])) & 1) << (9 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[9]) ^ l_r[1];
+        l_S[10] = a_mul(l_S[10]) ^ l_S[7] ^ ainv_mul(l_S[5]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[7];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[11] ^ l_r[1] ^ (l_r[0] + l_S[10])) & 1) << (10 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[10]) ^ l_r[1];
+        l_S[11] = a_mul(l_S[11]) ^ l_S[8] ^ ainv_mul(l_S[6]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[8];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[12] ^ l_r[1] ^ (l_r[0] + l_S[11])) & 1) << (11 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[11]) ^ l_r[1];
+        l_S[12] = a_mul(l_S[12]) ^ l_S[9] ^ ainv_mul(l_S[7]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[9];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[13] ^ l_r[1] ^ (l_r[0] + l_S[12])) & 1) << (12 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[12]) ^ l_r[1];
+        l_S[13] = a_mul(l_S[13]) ^ l_S[10] ^ ainv_mul(l_S[8]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[10];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[14] ^ l_r[1] ^ (l_r[0] + l_S[13])) & 1) << (13 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[13]) ^ l_r[1];
+        l_S[14] = a_mul(l_S[14]) ^ l_S[11] ^ ainv_mul(l_S[9]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[11];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[15] ^ l_r[1] ^ (l_r[0] + l_S[14])) & 1) << (14 + shift);
+
+        outfrom_fsm = (l_r[0] + l_S[14]) ^ l_r[1];
+        l_S[15] = a_mul(l_S[15]) ^ l_S[12] ^ ainv_mul(l_S[10]) ^ outfrom_fsm;
+        fsmtmp = l_r[1] + l_S[12];
+        l_r[1] = T(l_r[0]);
+        l_r[0] = fsmtmp;
+        l_z0 |= ((l_S[0] ^ l_r[1] ^ (l_r[0] + l_S[15])) & 1) << (15 + shift);
+    }
+
+    __builtin_memcpy(this->key, key, 32);
+    __builtin_memcpy(this->iv, iv, 32);
+    __builtin_memcpy(this->S, l_S, 128);
+    __builtin_memcpy(this->r, l_r, 16);
+    this->z_0 = l_z0;
+}
