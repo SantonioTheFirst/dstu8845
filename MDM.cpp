@@ -4,14 +4,14 @@
 // Константы этапа компиляции для жесткого контроля памяти
 constexpr int TOTAL_BITS = 768; // Общее пространство: 512 бит ключа + 256 бит IV
 constexpr int WORDS_COUNT = 12; // 768 бит / 64 бита в слове = ровно 12 слов типа uint64_t
-constexpr int TOTAL_ROUNDS = 32; [span_1](start_span)// Количество раундов инициализации твоего шифра[span_1](end_span)
-constexpr int MAX_CANDIDATES = 1000; [span_2](start_span)// Ограничение популяции кандидатов для алгоритма SlightlyGreedy[span_2](end_span)
-constexpr int NEXT_GEN_BUFFER = 10000; [span_3](start_span)// Размер статического буфера для списка L_c до применения фактора alpha[span_3](end_span)
+constexpr int TOTAL_ROUNDS = 32; // Количество раундов инициализации твоего шифра
+constexpr int MAX_CANDIDATES = 1000; // Ограничение популяции кандидатов для алгоритма SlightlyGreedy
+constexpr int NEXT_GEN_BUFFER = 10000; // Размер статического буфера для списка L_c до применения фактора alpha
 
 // Структура кандидата: теперь это чистая битовая маска 768-битного состояния
 struct Candidate { // Объявление структуры кандидата
     uint64_t mask[WORDS_COUNT]; // 12 слов по 64 бита. Установленный бит (1) означает, что бит включен в исследуемое подмножество
-    int score; [span_4](start_span)// Оценка кандидата: количество нулевых раундов инициализации подряд[span_4](end_span)
+    int score; // Оценка кандидата: количество нулевых раундов инициализации подряд
 }; // Конец структуры
 
 // Выравнивание глобальных массивов по границе 64 байт для оптимизации кэш-промахов L1
@@ -28,13 +28,13 @@ uint32_t run_mock_cipher(const uint64_t* state) { // Функция приним
         hash ^= static_cast<uint32_t>(state[i] >> 32); // Подмешиваем старшие 32 бита слова в хеш
         hash *= 0x01000193; // Снова умножаем для завершения раунда перемешивания текущего слова
     } // Конец цикла по словам состояния
-    return hash; [span_5](start_span)// Возвращаем 32-битный результат, симулирующий выход 32 раундов инициализации[span_5](end_span)
+    return hash; // Возвращаем 32-битный результат, симулирующий выход 32 раундов инициализации
 } // Конец функции эмуляции
 
-// Функция оценки кандидата (MDM test). [span_6](start_span)[span_7](start_span)Вычисляет сигнатуру для подмножества, заданного маской[span_6](end_span)[span_7](end_span)
+// Функция оценки кандидата (MDM test). Вычисляет сигнатуру для подмножества, заданного маской
 int evaluate_mdm(const uint64_t* mask) { // Принимает 768-битную маску выбранных бит
     uint64_t current_state[WORDS_COUNT] = {0}; // Выделяем на стеке 768-битное рабочее состояние и зануляем его
-    uint32_t mdm_signature = run_mock_cipher(current_state); [span_8](start_span)// Инициализируем сигнатуру базовым вызовом (все нули)[span_8](end_span)
+    uint32_t mdm_signature = run_mock_cipher(current_state); // Инициализируем сигнатуру базовым вызовом (все нули)
     
     int active_bits[128]; // Стек-буфер для хранения реальных индексов выбранных бит (для генерации кода Грея)
     int subset_size = 0; // Счетчик количества выбранных бит (размерность текущего куба)
@@ -51,7 +51,7 @@ int evaluate_mdm(const uint64_t* mask) { // Принимает 768-битную 
     
     if (subset_size == 0) return 0; // Если маска пуста, возвращаем 0 (куба нет)
     
-    uint64_t total_iterations = 1ULL << subset_size; [span_9](start_span)// Объем куба: 2 в степени количества бит подмножества[span_9](end_span)
+    uint64_t total_iterations = 1ULL << subset_size; // Объем куба: 2 в степени количества бит подмножества
     
     // Проход по кубу с использованием кодов Грея (смена 1 бита за шаг)
     for (uint64_t i = 1; i < total_iterations; ++i) { // Начинаем с 1, так как состояние 0 уже учтено
@@ -62,12 +62,12 @@ int evaluate_mdm(const uint64_t* mask) { // Принимает 768-битную 
         int bit_pos = bit_to_flip % 64; // Определяем позицию бита (0..63) внутри этого слова
         
         current_state[word_idx] ^= (1ULL << bit_pos); // Инвертируем ровно один бит состояния
-        mdm_signature ^= run_mock_cipher(current_state); [span_10](start_span)// Вызываем шифр и XOR-им выход с общей сигнатурой[span_10](end_span)
+        mdm_signature ^= run_mock_cipher(current_state); // Вызываем шифр и XOR-им выход с общей сигнатурой
     } // Конец прохода по кубу
     
     if (mdm_signature == 0) return TOTAL_ROUNDS; // Если все биты нули, возвращаем максимум (32 раунда)
     
-    [span_11](start_span)// Считаем подряд идущие нули начиная с младшего бита (соответствует нулевому раунду)[span_11](end_span)
+    // Считаем подряд идущие нули начиная с младшего бита (соответствует нулевому раунду)
     return __builtin_ctz(mdm_signature); // Возвращаем длину непрерывной серии нулей в сигнатуре
 } // Конец функции оценки
 
@@ -88,7 +88,7 @@ bool next_combination(int* indices, int n, int k) { // Принимает инд
     return true; // Комбинация сгенерирована
 } // Конец функции генератора
 
-[span_12](start_span)// Алгоритм FindBest: ищет лучшие биты для добавления к текущей маске[span_12](end_span)
+// Алгоритм FindBest: ищет лучшие биты для добавления к текущей маске
 void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* out_top, int& out_count) { // Параметры: текущий кандидат, сколько оставить, сколько бит добавить
     int available_bits[TOTAL_BITS]; // Стек-буфер для глобальных индексов бит, которых еще нет в маске
     int avail_count = 0; // Счетчик доступных бит
@@ -111,7 +111,7 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
     
     out_count = 0; // Обнуляем счетчик найденных кандидатов
     
-    [span_13](start_span)do { // Начинаем цикл тестирования комбинаций[span_13](end_span)
+    do { // Начинаем цикл тестирования комбинаций
         Candidate test_cand = current_cand; // Копируем маску родителя целиком
         
         for (int i = 0; i < n_add; ++i) { // Проходим по выбранным новым битам
@@ -139,11 +139,11 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
                 out_top[i - 1] = temp; // Установка
             } // Конец сортировки
         } // Конец логики поддержания топа
-    } while (next_combination(indices, avail_count, n_add)); [span_14](start_span)// Берем следующую комбинацию, пока они есть[span_14](end_span)
+    } while (next_combination(indices, avail_count, n_add)); // Берем следующую комбинацию, пока они есть
 } // Конец алгоритма FindBest
 
-[span_15](start_span)// Алгоритм SlightlyGreedy: обобщенный жадный алгоритм[span_15](end_span)
-[span_16](start_span)void slightly_greedy(const int* k_vec, const int* n_vec, const float* alpha_vec, int iterations) { // Принимает векторы настроек[span_16](end_span)
+// Алгоритм SlightlyGreedy: обобщенный жадный алгоритм
+void slightly_greedy(const int* k_vec, const int* n_vec, const float* alpha_vec, int iterations) { // Принимает векторы настроек
     int current_count = 1; // Стартуем с одного базового состояния
     for (int w = 0; w < WORDS_COUNT; ++w) S_current[0].mask[w] = 0; // Зануляем 768-битную маску первого кандидата (пустое множество)
     S_current[0].score = 0; // Начальный скор равен 0
@@ -151,11 +151,11 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
     for (int step = 0; step < iterations; ++step) { // Цикл по заданному количеству итераций
         int next_count = 0; // Счетчик кандидатов следующего поколения до обрезки
         
-        [span_17](start_span)for (int i = 0; i < current_count; ++i) { // Проходим по всем выжившим кандидатам текущего поколения[span_17](end_span)
+        for (int i = 0; i < current_count; ++i) { // Проходим по всем выжившим кандидатам текущего поколения
             Candidate local_top[128]; // Буфер для приема лучших расширений от FindBest
             int local_count = 0; // Количество реально найденных
             
-            find_best(S_current[i], k_vec[step], n_vec[step], local_top, local_count); [span_18](start_span)// Запрашиваем расширения[span_18](end_span)
+            find_best(S_current[i], k_vec[step], n_vec[step], local_top, local_count); // Запрашиваем расширения
             
             for (int j = 0; j < local_count; ++j) { // Перебираем результаты
                 if (next_count < NEXT_GEN_BUFFER) { // Если глобальный буфер следующего поколения не переполнен
@@ -164,7 +164,7 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
             } // Конец переноса
         } // Конец цикла обработки поколения
         
-        [span_19](start_span)// Сортировка всего следующего поколения (сортировка вставкой, т.к. STL запрещен)[span_19](end_span)
+        // Сортировка всего следующего поколения (сортировка вставкой)
         for (int i = 1; i < next_count; ++i) { // Начинаем со второго элемента
             Candidate key = S_next[i]; // Запоминаем текущий
             int j = i - 1; // Указываем на предыдущий
@@ -175,7 +175,7 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
             S_next[j + 1] = key; // Вставляем
         } // Конец сортировки
         
-        [span_20](start_span)// Редукция (отсечение хвоста списка) фактором альфа[span_20](end_span)
+        // Редукция (отсечение хвоста списка) фактором альфа
         int reduced_count = static_cast<int>(next_count * alpha_vec[step]); // Вычисляем новое количество
         if (reduced_count == 0 && next_count > 0) reduced_count = 1; // Оставляем хотя бы одного, чтобы алгоритм жил
         if (reduced_count > MAX_CANDIDATES) reduced_count = MAX_CANDIDATES; // Жесткий лимит по памяти
@@ -190,9 +190,9 @@ void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* 
 } // Конец алгоритма
 
 int main() { // Точка входа
-    const int k_vec[] = {5, 3, 2}; [span_21](start_span)// Настройки: сохранять 5, затем 3, затем 2 ветки на родителя[span_21](end_span)
-    const int n_vec[] = {2, 1, 1}; [span_22](start_span)// Настройки: добавлять по 2 бита, затем по 1 биту[span_22](end_span)
-    const float alpha_vec[] = {1.0f, 0.5f, 0.5f}; [span_23](start_span)// Настройки: редукция пула[span_23](end_span)
+    const int k_vec[] = {5, 3, 2}; // Настройки: сохранять 5, затем 3, затем 2 ветки на родителя
+    const int n_vec[] = {2, 1, 1}; // Настройки: добавлять по 2 бита, затем по 1 биту
+    const float alpha_vec[] = {1.0f, 0.5f, 0.5f}; // Настройки: редукция пула
     
     slightly_greedy(k_vec, n_vec, alpha_vec, 3); // Запуск алгоритма
     
