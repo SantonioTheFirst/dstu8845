@@ -48,7 +48,7 @@ int main()
     end = clock();
     cout << z_0 << "\n";
     
-    double time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
+    time_spent = (double)(end - begin) / CLOCKS_PER_SEC;
     cout << "Init time 512 bit: " << time_spent << "\n" << "Init per second: " << 10'000'000 / time_spent << "\n";
 
     cipher.dstu8845_512_fast(key_512, iv);
