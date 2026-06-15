@@ -1,224 +1,338 @@
-#include <cstdint>  // Подключаем типы фиксированной ширины (uint32_t, uint64_t) для точной работы с битовыми масками
-#include <iostream> // Подключаем поток ввода-вывода для отображения результатов работы
+#include "strumok_optimized.h"
+#include <cstdint>
+#include <iostream>
+#include <fstream>
+#include <omp.h>
+#include <cstring>
+#include <chrono>
+#include <iomanip>
 
-// Константы этапа компиляции для жесткого контроля памяти
-constexpr int TOTAL_BITS = 768; // Общее пространство: 512 бит ключа + 256 бит IV
-constexpr int WORDS_COUNT = 12; // 768 бит / 64 бита в слове = ровно 12 слов типа uint64_t
-constexpr int TOTAL_ROUNDS = 32; // Количество раундов инициализации твоего шифра
-constexpr int MAX_CANDIDATES = 1000; // Ограничение популяции кандидатов для алгоритма SlightlyGreedy
-constexpr int NEXT_GEN_BUFFER = 10000; // Размер статического буфера для списка L_c до применения фактора alpha
+constexpr uint16_t TOTAL_BITS = 768;
+constexpr uint8_t WORDS_KEY = 4;
+constexpr uint8_t WORDS_IV = 4;
+constexpr uint8_t WORDS_COUNT = WORDS_KEY + WORDS_IV; // 12 слов
+constexpr uint8_t TARGET_CUBE_SIZE = 35; // Целевая размерность куба
+constexpr uint8_t TOTAL_ROUNDS = 32;
+constexpr uint32_t MAX_CANDIDATES = 10000; 
 
-// Структура кандидата: теперь это чистая битовая маска 768-битного состояния
-struct Candidate { // Объявление структуры кандидата
-    uint64_t mask[WORDS_COUNT]; // 12 слов по 64 бита. Установленный бит (1) означает, что бит включен в исследуемое подмножество
-    int score; // Оценка кандидата: количество нулевых раундов инициализации подряд
-}; // Конец структуры
+// Строгое выравнивание структур для предотвращения false sharing в L1/L2
+struct alignas(64) Candidate {
+    uint64_t mask[WORDS_COUNT]; 
+    uint32_t score;
+    uint32_t signature;
+};
 
-// Выравнивание глобальных массивов по границе 64 байт для оптимизации кэш-промахов L1
-alignas(64) Candidate S_current[MAX_CANDIDATES]; // Массив кандидатов текущего поколения
-alignas(64) Candidate S_next[NEXT_GEN_BUFFER]; // Массив кандидатов следующего поколения до сортировки и редукции
+// Обертка состояния для корректного выравнивания
+struct alignas(64) CipherState {
+    uint64_t words[WORDS_COUNT];
+};
 
-// Эмуляция 32-раундового потокового шифра. 
-// Принимает 768-битное состояние, возвращает 32 бита вывода (по 1 биту на раунд)
-// Исправленная эмуляция нелинейного потокового шифра
-// Криптографически надежный mock-шифр с полной диффузией
-uint32_t run_mock_cipher(const uint64_t* state) {
-    // 1. Сжимаем все 12 слов (Ключ + IV) в одно 64-битное состояние 
-    // с использованием нелинейного миксера (подобно SplitMix64)
-    uint64_t mix = 0x9E3779B97F4A7C15ULL; // Константа золотого сечения
-    
-    for (int i = 0; i < WORDS_COUNT; ++i) {
-        mix += state[i]; // Сложение по модулю 2^64 (нелинейно по отношению к XOR)
-        mix ^= mix >> 30;
-        mix *= 0xBF58476D1CE4E5B9ULL;
-        mix ^= mix >> 27;
-        mix *= 0x94D049BB133111EBULL;
-        mix ^= mix >> 31;
-    }
-    
-    // 2. Генерируем 32 бита сигнатуры (по одному на "раунд")
-    uint32_t signature = 0;
-    uint32_t s = static_cast<uint32_t>(mix);
-    
-    for (int r = 0; r < TOTAL_ROUNDS; ++r) {
-        // Простой xorshift для эмуляции генерации потока
-        s ^= s << 13;
-        s ^= s >> 17;
-        s ^= s << 5;
-        
-        // Берем младший бит как выход раунда
-        uint32_t round_bit = s & 1;
-        signature |= (round_bit << r);
-    }
-    
-    return signature;
+// Выровненный счетчик для изоляции памяти между ядрами процессора
+struct alignas(64) ThreadData {
+    uint32_t count;
+};
+
+alignas(64) Candidate S_current[MAX_CANDIDATES];
+alignas(64) Candidate S_next[MAX_CANDIDATES * 2];
+
+// Вызов оптимизированной функции инициализации Струмка
+inline uint32_t run_mock_cipher(const uint64_t* key, const uint64_t* iv) {
+    dstu8845 cipher;
+    cipher.dstu8845_256_fast(key, iv);
+    return cipher.z_0;
 }
 
+// Линейный эвалюатор с кодом Грея
+inline void evaluate_mdm(Candidate& cand) {
+    CipherState current_state = {0}; 
+    uint32_t mdm_signature = run_mock_cipher(current_state.words, current_state.words + WORDS_KEY);
+    
+    uint32_t active_bits[128];
+    uint32_t subset_size = 0;
+    
+    for (uint32_t w = 0; w < WORDS_COUNT; ++w) {
+        uint64_t m = cand.mask[w];
+        while (m != 0) {
+            active_bits[subset_size++] = w * 64 + __builtin_ctzll(m);
+            m &= m - 1;
+        }
+    }
+    
+    if (subset_size == 0) { cand.score = 0; cand.signature = 0; return; }
+    
+    uint64_t total_iterations = 1ULL << subset_size;
+    
+    for (uint64_t i = 1; i < total_iterations; ++i) {
+        uint32_t flip_idx = __builtin_ctzll(i);
+        uint32_t bit_to_flip = active_bits[flip_idx];
+        current_state.words[bit_to_flip / 64] ^= (1ULL << (bit_to_flip % 64));
+        mdm_signature ^= run_mock_cipher(current_state.words, current_state.words + WORDS_KEY);
+    }
+    cand.signature = mdm_signature;
+    cand.score = (mdm_signature == 0) ? TOTAL_ROUNDS : __builtin_ctz(mdm_signature);
+}
 
-// Функция оценки кандидата (MDM test). Вычисляет сигнатуру для подмножества, заданного маской
-int evaluate_mdm(const uint64_t* mask) { // Принимает 768-битную маску выбранных бит
-    uint64_t current_state[WORDS_COUNT] = {0}; // Выделяем на стеке 768-битное рабочее состояние и зануляем его
-    uint32_t mdm_signature = run_mock_cipher(current_state); // Инициализируем сигнатуру базовым вызовом (все нули)
-    
-    int active_bits[128]; // Стек-буфер для хранения реальных индексов выбранных бит (для генерации кода Грея)
-    int subset_size = 0; // Счетчик количества выбранных бит (размерность текущего куба)
-    
-    // Битовая магия для быстрого извлечения индексов из 768-битной маски
-    for (int w = 0; w < WORDS_COUNT; ++w) { // Проходим по 12 словам маски
-        uint64_t m = mask[w]; // Копируем слово во временную переменную, чтобы безопасно ее разрушать
-        while (m != 0) { // Пока в слове остались единицы
-            int bit_idx = __builtin_ctzll(m); // Находим позицию младшего установленного бита (Count Trailing Zeros)
-            active_bits[subset_size++] = w * 64 + bit_idx; // Вычисляем глобальный индекс бита (0..767) и сохраняем
-            m &= m - 1; // Сбрасываем младший установленный бит (быстрый переход к следующей единице)
-        } // Конец цикла по битам одного слова
-    } // Конец извлечения индексов
-    
-    if (subset_size == 0) return 0; // Если маска пуста, возвращаем 0 (куба нет)
-    
-    uint64_t total_iterations = 1ULL << subset_size; // Объем куба: 2 в степени количества бит подмножества
-    
-    // Проход по кубу с использованием кодов Грея (смена 1 бита за шаг)
-    for (uint64_t i = 1; i < total_iterations; ++i) { // Начинаем с 1, так как состояние 0 уже учтено
-        int flip_idx = __builtin_ctzll(i); // Находим какой бит кода Грея нужно инвертировать на этом шаге
-        int bit_to_flip = active_bits[flip_idx]; // Получаем глобальный индекс шифра (0..767) из нашего массива
-        
-        int word_idx = bit_to_flip / 64; // Определяем, в каком из 12 слов находится этот бит
-        int bit_pos = bit_to_flip % 64; // Определяем позицию бита (0..63) внутри этого слова
-        
-        current_state[word_idx] ^= (1ULL << bit_pos); // Инвертируем ровно один бит состояния
-        mdm_signature ^= run_mock_cipher(current_state); // Вызываем шифр и XOR-им выход с общей сигнатурой
-    } // Конец прохода по кубу
-    
-    if (mdm_signature == 0) return TOTAL_ROUNDS; // Если все биты нули, возвращаем максимум (32 раунда)
-    
-    // Считаем подряд идущие нули начиная с младшего бита (соответствует нулевому раунду)
-    return __builtin_ctz(mdm_signature); // Возвращаем длину непрерывной серии нулей в сигнатуре
-} // Конец функции оценки
+// Поддержание топа (In-place сортировка вставками)
+inline void update_top(Candidate* top_array, uint32_t& count, const Candidate& new_cand, uint32_t k_keep) {
+    if (count < k_keep) {
+        top_array[count++] = new_cand;
+        for (int32_t i = count - 1; i > 0 && top_array[i].score > top_array[i - 1].score; --i) {
+            Candidate temp = top_array[i]; top_array[i] = top_array[i - 1]; top_array[i - 1] = temp;
+        }
+    } else if (new_cand.score > top_array[k_keep - 1].score) {
+        top_array[k_keep - 1] = new_cand;
+        for (int32_t i = k_keep - 1; i > 0 && top_array[i].score > top_array[i - 1].score; --i) {
+            Candidate temp = top_array[i]; top_array[i] = top_array[i - 1]; top_array[i - 1] = temp;
+        }
+    }
+}
 
-// Итеративный ленивый генератор сочетаний (n из k)
-bool next_combination(int* indices, int n, int k) { // Принимает индексы, размер пула (n) и сколько нужно выбрать (k)
-    int i = k - 1; // Начинаем с самого правого элемента массива индексов
-    while (i >= 0 && indices[i] == n - k + i) { // Идем влево, пока элементы достигли своего максимума
-        i--; // Сдвигаем указатель левее
-    } // Конец цикла поиска элемента для инкремента
-    
-    if (i < 0) return false; // Если все индексы на максимуме, комбинации закончились
-    
-    indices[i]++; // Увеличиваем найденный элемент
-    for (int j = i + 1; j < k; ++j) { // Проходим по всем элементам правее инкрементированного
-        indices[j] = indices[j - 1] + 1; // Выстраиваем их строго по возрастанию (+1 от предыдущего)
-    } // Конец восстановления порядка хвоста
-    
-    return true; // Комбинация сгенерирована
-} // Конец функции генератора
+// Подсистема чекпоинтов
+void save_checkpoint(uint32_t step, const Candidate* pool, uint32_t count) {
+    char name[64]; sprintf(name, "ckpt_step_%u.bin", step);
+    std::ofstream f(name, std::ios::binary);
+    if (f.is_open()) {
+        f.write(reinterpret_cast<const char*>(&count), sizeof(count));
+        f.write(reinterpret_cast<const char*>(pool), count * sizeof(Candidate));
+    }
+}
 
-// Алгоритм FindBest: ищет лучшие биты для добавления к текущей маске
-void find_best(const Candidate& current_cand, int k_keep, int n_add, Candidate* out_top, int& out_count) { // Параметры: текущий кандидат, сколько оставить, сколько бит добавить
-    int available_bits[TOTAL_BITS]; // Стек-буфер для глобальных индексов бит, которых еще нет в маске
-    int avail_count = 0; // Счетчик доступных бит
-    
-    // Извлекаем индексы нулей (свободных бит) из текущей маски кандидата
-    for (int w = 0; w < WORDS_COUNT; ++w) { // Проходим по всем 12 словам маски
-        uint64_t inv_mask = ~current_cand.mask[w]; // Инвертируем маску: теперь 1 означает "бит свободен"
-        uint64_t m = inv_mask; // Копируем инвертированную маску для разрушающего чтения
-        while (m != 0) { // Пока есть свободные биты
-            int bit_pos = __builtin_ctzll(m); // Находим позицию свободного бита
-            available_bits[avail_count++] = w * 64 + bit_pos; // Записываем глобальный индекс (0..767)
-            m &= m - 1; // Сбрасываем обработанный бит
-        } // Конец цикла по свободным битам слова
-    } // Конец сбора доступных бит
-    
-    int indices[128]; // Буфер для генератора комбинаций (индексы внутри массива available_bits)
-    for (int i = 0; i < n_add; ++i) { // Задаем начальную комбинацию
-        indices[i] = i; // 0, 1, 2...
-    } // Конец начальной инициализации
-    
-    out_count = 0; // Обнуляем счетчик найденных кандидатов
-    
-    do { // Начинаем цикл тестирования комбинаций
-        Candidate test_cand = current_cand; // Копируем маску родителя целиком
-        
-        for (int i = 0; i < n_add; ++i) { // Проходим по выбранным новым битам
-            int global_bit_idx = available_bits[indices[i]]; // Достаем глобальный индекс бита
-            int word_idx = global_bit_idx / 64; // Вычисляем слово
-            int bit_pos = global_bit_idx % 64; // Вычисляем позицию в слове
-            test_cand.mask[word_idx] |= (1ULL << bit_pos); // Устанавливаем бит в маске кандидата
-        } // Конец установки новых бит
-        
-        test_cand.score = evaluate_mdm(test_cand.mask); // Вычисляем MDM сигнатуру и скор для новой маски
-        
-        // Логика добавления в топ-k (сортировка вставкой на лету)
-        if (out_count < k_keep) { // Если топ еще не заполнен
-            out_top[out_count++] = test_cand; // Добавляем в конец
-            for (int i = out_count - 1; i > 0 && out_top[i].score > out_top[i - 1].score; --i) { // Всплытие пузырьком
-                Candidate temp = out_top[i]; // Запоминаем текущий
-                out_top[i] = out_top[i - 1]; // Сдвигаем верхний вниз
-                out_top[i - 1] = temp; // Ставим текущий выше
-            } // Конец всплытия
-        } else if (test_cand.score > out_top[k_keep - 1].score) { // Если топ полон, но новый кандидат лучше худшего в топе
-            out_top[k_keep - 1] = test_cand; // Заменяем худшего
-            for (int i = k_keep - 1; i > 0 && out_top[i].score > out_top[i - 1].score; --i) { // Поднимаем его на нужное место
-                Candidate temp = out_top[i]; // Временная переменная
-                out_top[i] = out_top[i - 1]; // Сдвиг
-                out_top[i - 1] = temp; // Установка
-            } // Конец сортировки
-        } // Конец логики поддержания топа
-    } while (next_combination(indices, avail_count, n_add)); // Берем следующую комбинацию, пока они есть
-} // Конец алгоритма FindBest
+bool load_checkpoint(uint32_t step, Candidate* pool, uint32_t& count) {
+    char name[64]; sprintf(name, "ckpt_step_%u.bin", step);
+    std::ifstream f(name, std::ios::binary);
+    if (!f.is_open()) return false;
+    f.read(reinterpret_cast<char*>(&count), sizeof(count));
+    f.read(reinterpret_cast<char*>(pool), count * sizeof(Candidate));
+    std::cout << "--> Resumed from " << name << " (" << count << " candidates)\n";
+    return true;
+}
 
-// Алгоритм SlightlyGreedy: обобщенный жадный алгоритм
-void slightly_greedy(const int* k_vec, const int* n_vec, const float* alpha_vec, int iterations) { // Принимает векторы настроек
-    int current_count = 1; // Стартуем с одного базового состояния
-    for (int w = 0; w < WORDS_COUNT; ++w) S_current[0].mask[w] = 0; // Зануляем 768-битную маску первого кандидата (пустое множество)
-    S_current[0].score = 0; // Начальный скор равен 0
+inline char* append_uint32(char* buf, uint32_t val) {
+    if (val == 0) { *buf++ = '0'; return buf; }
+    char tmp[12]; int32_t i = 0;
+    while (val > 0) { tmp[i++] = '0' + (val % 10); val /= 10; }
+    while (i > 0) { *buf++ = tmp[--i]; }
+    return buf;
+}
+
+// Запись пула в файл CSV с учетом времени шага
+void dump_pool_to_csv(std::ofstream& csv_file, uint32_t step, const Candidate* pool, uint32_t count, double step_time) {
+    static constexpr size_t BUF_SIZE = 10 * 1024 * 1024;
+    static char write_buf[BUF_SIZE];
+    char* ptr = write_buf;
     
-    for (int step = 0; step < iterations; ++step) { // Цикл по заданному количеству итераций
-        int next_count = 0; // Счетчик кандидатов следующего поколения до обрезки
+    char time_str[32];
+    int time_len = sprintf(time_str, "%.3f", step_time);
+    
+    for (uint32_t i = 0; i < count; ++i) {
+        const auto& cand = pool[i];
+        ptr = append_uint32(ptr, step); *ptr++ = ';';
+        ptr = append_uint32(ptr, i + 1); *ptr++ = ';';
+        ptr = append_uint32(ptr, cand.score); *ptr++ = ';';
         
-        for (int i = 0; i < current_count; ++i) { // Проходим по всем выжившим кандидатам текущего поколения
-            Candidate local_top[128]; // Буфер для приема лучших расширений от FindBest
-            int local_count = 0; // Количество реально найденных
+        std::memcpy(ptr, time_str, time_len);
+        ptr += time_len; *ptr++ = ';';
+        
+        int32_t shift = 28;
+        while (shift >= 0) {
+            uint32_t nibble = (cand.signature >> shift) & 0xF;
+            *ptr++ = (nibble < 10) ? ('0' + nibble) : ('A' + (nibble - 10));
+            shift -= 4;
+        }
+        *ptr++ = ';';
+        
+        bool first = true;
+        for (uint32_t w = 0; w < WORDS_COUNT; ++w) {
+            uint64_t m = cand.mask[w];
+            while (m != 0) {
+                if (!first) *ptr++ = ' ';
+                ptr = append_uint32(ptr, w * 64 + __builtin_ctzll(m));
+                first = false; m &= m - 1;
+            }
+        }
+        *ptr++ = '\n';
+        
+        if (ptr - write_buf > static_cast<ptrdiff_t>(BUF_SIZE - 4096)) {
+            csv_file.write(write_buf, ptr - write_buf); ptr = write_buf;
+        }
+    }
+    if (ptr > write_buf) csv_file.write(write_buf, ptr - write_buf);
+}
+
+// HPC: Двухуровневый безблокировочный поиск (Cube Attack Edition - поиск только по IV)
+void find_best_parallel(const Candidate& current_cand, uint32_t k_keep, uint32_t n_add, Candidate* global_top, uint32_t& global_count, Candidate* all_threads_tops, ThreadData* thread_data) {
+    uint32_t available_bits[TOTAL_BITS]; 
+    uint32_t avail_count = 0;
+    
+    // ВАЖНО: Сбор свободных бит ТОЛЬКО из пространства IV (w начинается с WORDS_KEY)
+    for (uint32_t w = WORDS_KEY; w < WORDS_COUNT; ++w) {
+        uint64_t inv = ~current_cand.mask[w];
+        while (inv != 0) { 
+            available_bits[avail_count++] = w * 64 + __builtin_ctzll(inv); 
+            inv &= inv - 1; 
+        }
+    }
+    
+    int num_threads = omp_get_max_threads();
+    std::memset(thread_data, 0, num_threads * sizeof(ThreadData)); // Обнуляем счетчики потоков
+
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        Candidate* my_top = &all_threads_tops[tid * k_keep];
+        uint32_t& my_count = thread_data[tid].count;
+
+        if (n_add == 1) {
+            #pragma omp for schedule(dynamic, 64) nowait
+            for (uint32_t i = 0; i < avail_count; ++i) {
+                Candidate test_cand = current_cand;
+                uint32_t b1 = available_bits[i];
+                test_cand.mask[b1 / 64] |= (1ULL << (b1 % 64));
+                
+                evaluate_mdm(test_cand);
+                update_top(my_top, my_count, test_cand, k_keep);
+            }
+        } 
+        else if (n_add == 2) {
+            #pragma omp for schedule(dynamic, 16) nowait
+            for (uint32_t i = 0; i < avail_count; ++i) {
+                for (uint32_t j = i + 1; j < avail_count; ++j) {
+                    Candidate test_cand = current_cand;
+                    uint32_t b1 = available_bits[i]; 
+                    uint32_t b2 = available_bits[j];
+                    test_cand.mask[b1 / 64] |= (1ULL << (b1 % 64));
+                    test_cand.mask[b2 / 64] |= (1ULL << (b2 % 64));
+                    
+                    evaluate_mdm(test_cand);
+                    update_top(my_top, my_count, test_cand, k_keep);
+                }
+            }
+        }
+    }
+
+    // Последовательное слияние локальных топов в глобальный без критических секций
+    global_count = 0;
+    for (int t = 0; t < num_threads; ++t) {
+        Candidate* thread_sector = &all_threads_tops[t * k_keep];
+        uint32_t t_count = thread_data[t].count;
+        for (uint32_t i = 0; i < t_count; ++i) {
+            update_top(global_top, global_count, thread_sector[i], k_keep);
+        }
+    }
+}
+
+// Основной цикл
+void slightly_greedy(const uint32_t* k_vec, const uint32_t* n_vec, const uint32_t* limit_vec, uint32_t iterations) {
+    std::ofstream csv_file("mdm_analytics.csv", std::ios::out | std::ios::binary | std::ios::app);
+    if (csv_file.is_open()) {
+        csv_file << "Step;Rank;Score;StepTime(s);Signature;Cube_Bits\n"; 
+    }
+    
+    uint32_t current_count = 1;
+    std::memset(&S_current[0], 0, sizeof(Candidate));
+    
+    uint32_t start_step = 0;
+    for (int32_t s = iterations - 1; s >= 0; --s) {
+        if (load_checkpoint(s, S_current, current_count)) { 
+            start_step = s + 1; 
+            break; 
+        }
+    }
+
+    // Выделение памяти под структуры распараллеливания 1 раз, чтобы избежать задержек (low-latency)
+    int max_threads = omp_get_max_threads();
+    Candidate* all_threads_tops = new Candidate[max_threads * MAX_CANDIDATES];
+    ThreadData* thread_data = new ThreadData[max_threads];
+
+    for (uint32_t step = start_step; step < iterations; ++step) {
+        auto step_start_time = std::chrono::high_resolution_clock::now();
+        
+        uint32_t next_count = 0;
+        uint32_t k_keep = k_vec[step];
+        
+        Candidate* local_results = new Candidate[k_keep];
+        
+        for (uint32_t i = 0; i < current_count; ++i) {
+            uint32_t returned_count = 0;
+            // Передаем сырые указатели для исключения аллокаций внутри горячего алгоритма
+            find_best_parallel(S_current[i], k_keep, n_vec[step], local_results, returned_count, all_threads_tops, thread_data);
             
-            find_best(S_current[i], k_vec[step], n_vec[step], local_top, local_count); // Запрашиваем расширения
-            std::cout << "Local count: " << local_count << "\n";
-            for (int j = 0; j < local_count; ++j) { // Перебираем результаты
-                if (next_count < NEXT_GEN_BUFFER) { // Если глобальный буфер следующего поколения не переполнен
-                    S_next[next_count++] = local_top[j]; // Копируем кандидата
-                } // Конец проверки буфера
-            } // Конец переноса
-        } // Конец цикла обработки поколения
+            for (uint32_t j = 0; j < returned_count; ++j) {
+                if (next_count < MAX_CANDIDATES * 2) {
+                    S_next[next_count++] = local_results[j];
+                }
+            }
+        }
+        delete[] local_results;
         
-        // Сортировка всего следующего поколения (сортировка вставкой)
-        for (int i = 1; i < next_count; ++i) { // Начинаем со второго элемента
-            Candidate key = S_next[i]; // Запоминаем текущий
-            int j = i - 1; // Указываем на предыдущий
-            while (j >= 0 && S_next[j].score < key.score) { // Ищем место для вставки (по убыванию скора)
-                S_next[j + 1] = S_next[j]; // Сдвигаем меньшие элементы вправо
-                j = j - 1; // Шагаем влево
-            } // Конец поиска позиции
-            S_next[j + 1] = key; // Вставляем
-        } // Конец сортировки
+        for (uint32_t i = 1; i < next_count; ++i) {
+            Candidate key = S_next[i]; int32_t j = i - 1;
+            while (j >= 0 && S_next[j].score < key.score) { S_next[j + 1] = S_next[j]; j--; }
+            S_next[j + 1] = key;
+        }
         
-        // Редукция (отсечение хвоста списка) фактором альфа
-        int reduced_count = static_cast<int>(next_count * alpha_vec[step]); // Вычисляем новое количество
-        if (reduced_count == 0 && next_count > 0) reduced_count = 1; // Оставляем хотя бы одного, чтобы алгоритм жил
-        if (reduced_count > MAX_CANDIDATES) reduced_count = MAX_CANDIDATES; // Жесткий лимит по памяти
+        uint32_t reduced_count = next_count;
+        if (reduced_count > limit_vec[step]) reduced_count = limit_vec[step];
+        if (reduced_count == 0 && next_count > 0) reduced_count = 1;
+        if (reduced_count > MAX_CANDIDATES) reduced_count = MAX_CANDIDATES;
         
-        current_count = reduced_count; // Обновляем размер пула
-        for (int i = 0; i < current_count; ++i) { // Цикл копирования
-            S_current[i] = S_next[i]; // Перенос структур из буфера в основной массив поколения
-        } // Конец копирования
+        current_count = reduced_count;
+        std::memcpy(S_current, S_next, current_count * sizeof(Candidate));
         
-        std::cout << "Step " << step << " max zero rounds: " << S_current[0].score << "\n"; // Выводим лучший результат шага
-    } // Конец итераций алгоритма
-} // Конец алгоритма
+        auto step_end_time = std::chrono::high_resolution_clock::now();
+        double elapsed_seconds = std::chrono::duration<double>(step_end_time - step_start_time).count();
+        
+        std::cout << "Step " << step 
+                  << " | Max Score: " << S_current[0].score 
+                  << " | Pool size: " << current_count 
+                  << " | Time: " << std::fixed << std::setprecision(3) << elapsed_seconds << " s\n";
+        
+        if (csv_file.is_open()) {
+            dump_pool_to_csv(csv_file, step, S_current, current_count, elapsed_seconds);
+        }
+        save_checkpoint(step, S_current, current_count);
+    }
+    
+    // Освобождение памяти
+    delete[] all_threads_tops;
+    delete[] thread_data;
+    csv_file.close();
+}
 
-int main() { // Точка входа
-    const int k_vec[] = {5, 3, 2}; // Настройки: сохранять 5, затем 3, затем 2 ветки на родителя
-    const int n_vec[] = {2, 1, 1}; // Настройки: добавлять по 2 бита, затем по 1 биту
-    const float alpha_vec[] = {1.0f, 0.5f, 0.5f}; // Настройки: редукция пула
+int main() {
+    omp_set_num_threads(omp_get_max_threads());
     
-    slightly_greedy(k_vec, n_vec, alpha_vec, 3); // Запуск алгоритма
+    // Замена std::vector на стековые массивы 
+    uint32_t k_vec[TARGET_CUBE_SIZE];
+    uint32_t n_vec[TARGET_CUBE_SIZE];
+    uint32_t limit_vec[TARGET_CUBE_SIZE];
     
-    return 0; // Успешное завершение
+    // Шаг 0: ищем пары (n = 2)
+    n_vec[0] = 2;
+    k_vec[0] = MAX_CANDIDATES;
+    limit_vec[0] = MAX_CANDIDATES;
+
+    // Шаг 1: ищем пары (n = 2)
+    n_vec[1] = 2;
+    k_vec[1] = 2000;
+    limit_vec[1] = MAX_CANDIDATES;
+    
+    // Последующие шаги: наращиваем по 1 биту
+    for (uint32_t i = 2; i < TARGET_CUBE_SIZE; ++i) {
+        n_vec[i] = 1;
+        k_vec[i] = 2000;
+        limit_vec[i] = MAX_CANDIDATES;
+    }
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    
+    std::cout << "Starting SlightlyGreedy search using " << omp_get_max_threads() << " threads...\n";
+    slightly_greedy(k_vec, n_vec, limit_vec, TARGET_CUBE_SIZE);
+    
+    auto end_time = std::chrono::high_resolution_clock::now();
+    std::cout << "Total Elapsed time: " 
+              << std::chrono::duration_cast<std::chrono::seconds>(end_time - start_time).count() 
+              << " s\n";
+              
+    return 0;
 }
