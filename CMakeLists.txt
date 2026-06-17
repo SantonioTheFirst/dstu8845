@@ -14,7 +14,7 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|ARM64")
     FetchContent_MakeAvailable(sse2neon)
 endif()
 
-add_library(strumok_lib STATIC dstu8845.cpp)
+add_library(dstu8845_lib STATIC dstu8845.cpp)
 
 target_include_directories(dstu8845_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
