@@ -1,4 +1,4 @@
-#include "strumok_optimized.h"
+#include "dstu8845.h"
 #include <iostream>
 #include <time.h>
 
