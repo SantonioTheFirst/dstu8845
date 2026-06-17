@@ -1,8 +1,12 @@
 #include "strumok_optimized.h"
-#include <immintrin.h>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
+#if defined(__x86_64__) || defined(_M_X64)
+    #include <immintrin.h>
+#elif defined(__aarch64__) || defined(_M_ARM64)
+    #include "sse2neon.h"
+#endif
 using namespace std;
 
 void dstu8845::print() const
